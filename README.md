@@ -24,4 +24,5 @@ Other details, such as the analysis of singletons and their effects on the place
 
 ## References
 Perri, A.R., Mitchell, K.J., Mouton, A. et al. Dire wolves were the last of an ancient New World canid lineage. Nature 591, 87–91 (2021). https://doi.org/10.1038/s41586-020-03082-x.
+
 Slater, G. J. Iterative adaptive radiations of fossil canids show no evidence for diversity-dependent trait evolution. PNAS 112(16), 4897-4902. https://doi.org/10.1073/pnas.1403666111.
