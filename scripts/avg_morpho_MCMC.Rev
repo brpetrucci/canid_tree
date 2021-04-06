@@ -1,8 +1,8 @@
-##########################################
-## Model averaging for nuclear DNA data ##
-##        EEOB 563 final project        ##
-##       Bruno do Rosario Petrucci      ##
-##########################################
+############################################
+## Model averaging for morphological data ##
+##         EEOB 563 final project         ##
+##        Bruno do Rosario Petrucci       ##
+############################################
 
 ###
 # set up basic objects for the analysis
@@ -10,9 +10,9 @@
 # base terminal for project
 baseDir <- "/home/petrucci/canid_tree/"
 
-# read nuclear DNA data
-nuclear <- readDiscreteCharacterData(baseDir + "data/nuclear.nex")
-
+# read morphological data
+nuclear <- readDiscreteCharacterData(baseDir + "data/extant_morpho.nex")
+########### TODO \/\/\/\/\/\/
 # some quantities that we may like to use later
 nTaxa <- nuclear.ntaxa()
 nBranches <- 2 * nTaxa - 3

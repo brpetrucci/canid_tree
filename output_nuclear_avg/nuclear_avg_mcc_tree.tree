@@ -1,0 +1,21 @@
+#NEXUS
+
+	Begin taxa;
+	Dimensions ntax=10;
+	Taxlabels
+		Canis_adustus
+		Canis_aureus
+		Canis_dirus
+		Canis_latrans
+		Canis_lupus
+		Canis_mesomelas
+		Canis_simensis
+		Cuon_alpinus
+		Lycaon_pictus
+		Urocyon_cinereoargenteus
+		;
+End;
+
+Begin trees;
+tree TREE1 = [&R](((((((Canis_latrans[&index=2,age_95%_HPD={0.803875,1.00359}]:0.016788,Canis_lupus[&index=8,age_95%_HPD={0.81473,1.01683}]:0.004346)[&index=11,posterior=1.000000,age_95%_HPD={0.818473,1.02166}]:0.003541,Canis_aureus[&index=3,age_95%_HPD={0.819214,1.02224}]:0.002763)[&index=12,posterior=1.000000,age_95%_HPD={0.821607,1.02533}]:0.005968,Canis_simensis[&index=7,age_95%_HPD={0.779939,0.974237}]:0.053573)[&index=13,posterior=1.000000,age_95%_HPD={0.826677,1.03164}]:0.019807,Cuon_alpinus[&index=5,age_95%_HPD={0.723595,0.905447}]:0.136076)[&index=14,posterior=1.000000,age_95%_HPD={0.843818,1.05265}]:0.013008,(Canis_dirus[&index=9,age_95%_HPD={0.838673,1.04519}]:0.039020,Urocyon_cinereoargenteus[&index=4]:1.001854)[&index=15,posterior=0.500000,age_95%_HPD={0.970727,1.04314}]:-0.019298)[&index=16,posterior=1.000000,age_95%_HPD={0.857716,1.06327}]:0.007600,Lycaon_pictus[&index=10,age_95%_HPD={0.728291,0.910366}]:0.152923)[&index=17,posterior=1.000000,age_95%_HPD={0.862017,1.07426}]:0.038983,Canis_adustus[&index=1,age_95%_HPD={0.891587,1.11117}]:0.004946,Canis_mesomelas[&index=6,age_95%_HPD={0.785485,0.980367}]:0.126205)[&index=18,posterior=1.000000,age_95%_HPD={0.896244,1.11651}]:0.000000;
+End;

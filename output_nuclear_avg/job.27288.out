@@ -1,0 +1,74 @@
+Already up-to-date.
+Building rb
+CC=/opt/rit/spack-app/linux-rhel7-x86_64/gcc-4.8.5/gcc-7.3.0-xegsmw4io2dcncdni4rqhfmhuzljcg3l/bin/gcc  CXX=/opt/rit/spack-app/linux-rhel7-x86_64/gcc-4.8.5/gcc-7.3.0-xegsmw4io2dcncdni4rqhfmhuzljcg3l/bin/g++
+Generating version numbers in GitVersion.cpp
+Running './regenerate.sh /home/petrucci/revbayes/projects/cmake/build
+Making build directory '/home/petrucci/revbayes/projects/cmake/build'
+Generating src/generated_include_dirs.cmake
+Generating src/libs/CMakeLists.txt
+Generating src/core/CMakeLists.txt
+Generating src/revlanguage/CMakeLists.txt
+Generating src/help2yml/CMakeLists.txt
+Generating src/cmd/CMakeLists.txt
+
+
+Running 'cmake ../../../src -DRB_EXEC_NAME=rb ' in /home/petrucci/revbayes/projects/cmake/build
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/petrucci/revbayes/projects/cmake/build
+
+Running 'make -j 4' in /home/petrucci/revbayes/projects/cmake/build
+[  2%] Built target rb-libs
+Scanning dependencies of target rb-parser
+[  2%] Building CXX object revlanguage/CMakeFiles/rb-parser.dir/utils/GitVersion.cpp.o
+[ 52%] Built target rb-core
+[ 53%] Linking CXX static library librb-parser.a
+[100%] Built target rb-parser
+[100%] Linking CXX executable ../rb
+[100%] Built target rb
+
+RevBayes version (1.1.1)
+Build from development (rapture-641-g7d4aab) on Tue Apr  6 10:34:42 CDT 2021
+
+Visit the website www.RevBayes.com for more information about RevBayes.
+
+RevBayes is free software released under the GPL license, version 3. Type 'license()' for details.
+
+To quit RevBayes type 'quit()' or 'q()'.
+
+
+> source("scripts/avg_nuclear_MCMC.Rev")
+   Processing file "scripts/avg_nuclear_MCMC.Rev"
+   Successfully read one character matrix from file '/home/petrucci/canid_tree/data/nuclear.nex'
+
+   Running MCMC simulation
+   This simulation runs 2 independent replicates.
+   The simulator uses 34 different moves in a random move schedule with 118 moves per iteration
+
+Iter        |      Posterior   |     Likelihood   |          Prior   |   alpha_indi..   |   p_inv_indi..   |    Q_indicator   |    elapsed   |        ETA   |
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+0           |   -6.19104e+06   |   -6.19104e+06   |       -1.40392   |              1   |              1   |              5   |   00:00:00   |   --:--:--   |
+1000        |   -2.54649e+06   |   -2.54652e+06   |        25.7911   |              0   |              0   |              4   |   00:13:59   |   --:--:--   |
+2000        |    -2.5465e+06   |   -2.54652e+06   |        19.8892   |              0   |              0   |              4   |   00:28:09   |   04:13:21   |
+3000        |   -2.54649e+06   |   -2.54651e+06   |        23.9785   |              0   |              0   |              4   |   00:42:16   |   03:59:30   |
+4000        |    -2.5465e+06   |   -2.54652e+06   |        26.2662   |              0   |              0   |              4   |   00:56:23   |   03:45:32   |
+5000        |   -2.54649e+06   |   -2.54651e+06   |        23.0592   |              0   |              0   |              4   |   01:10:28   |   03:31:24   |
+6000        |   -2.54651e+06   |   -2.54651e+06   |        6.29031   |              1   |              0   |              4   |   01:24:33   |   03:17:17   |
+7000        |   -2.54651e+06   |   -2.54651e+06   |        2.99516   |              1   |              0   |              4   |   01:38:41   |   03:03:16   |
+8000        |   -2.54652e+06   |   -2.54652e+06   |        1.83407   |              1   |              0   |              4   |   01:52:48   |   02:49:12   |
+9000        |           -nan   |           -nan   |           -nan   |              1   |              1   |              4   |   02:06:19   |   02:34:23   |
+10000       |           -nan   |           -nan   |           -nan   |              1   |              1   |              4   |   02:14:37   |   02:14:37   |
+11000       |           -nan   |           -nan   |           -nan   |              1   |              1   |              4   |   02:22:15   |   01:56:23   |
+12000       |           -nan   |           -nan   |           -nan   |              1   |              1   |              4   |   02:29:54   |   01:39:56   |
+13000       |           -nan   |           -nan   |           -nan   |              1   |              1   |              4   |   02:37:33   |   01:24:50   |
+14000       |           -nan   |           -nan   |           -nan   |              1   |              1   |              4   |   02:45:10   |   01:10:47   |
+15000       |           -nan   |           -nan   |           -nan   |              1   |              1   |              4   |   02:52:49   |   00:57:36   |
+16000       |           -nan   |           -nan   |           -nan   |              1   |              1   |              4   |   03:00:28   |   00:45:07   |
+17000       |           -nan   |           -nan   |           -nan   |              1   |              1   |              4   |   03:08:05   |   00:33:11   |
+18000       |           -nan   |           -nan   |           -nan   |              1   |              1   |              4   |   03:15:44   |   00:21:44   |
+19000       |           -nan   |           -nan   |           -nan   |              1   |              1   |              4   |   03:23:24   |   00:10:42   |
+
+
+Iter        |      Posterior   |     Likelihood   |          Prior   |   alpha_indi..   |   p_inv_indi..   |    Q_indicator   |    elapsed   |        ETA   |
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+20000       |           -nan   |           -nan   |           -nan   |              1   |              1   |              4   |   03:31:03   |   00:00:00   |
