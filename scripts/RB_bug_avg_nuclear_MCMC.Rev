@@ -48,21 +48,16 @@ phy := treeAssembly(top, br_lens)
 # kappa - transition/transversion rate
 kappa ~ dnExp(1)
 moves.append( mvScale(kappa, weight = 5) )
-# this should be 0, but might as well set it to see how it goes
 
 # pi - base frequencies
 pi ~ dnDirichlet( v(1, 1, 1, 1) )
 moves.append( mvBetaSimplex(pi, weight = 5) )
 moves.append( mvDirichletSimplex(pi, weight = 2.5) )
 
-# exchangeability rates for GTR transversions
-er_trans ~ dnDirichlet( v(1, 1, 1, 1) )
-moves.append( mvBetaSimplex(er_trans, weight = 5) )
-moves.append( mvDirichletSimplex(er_trans, weight = 2.5) )
-
-# exchangeability rates - need to do this since the data set is
-# transversions only
-er := Simplex(v(er_trans[1], 0, er_trans[2], er_trans[3], 0, er_trans[4]))
+# exchangeability rates for GTR
+er ~ dnDirichlet( v(1, 1, 1, 1, 1, 1) )
+moves.append( mvBetaSimplex(er, weight = 5) )
+moves.append( mvDirichletSimplex(er, weight = 2.5) )
 
 # rate matrices
 Q_JC <- fnJC(4)
@@ -79,8 +74,16 @@ Q_vec := v(Q_JC, Q_K80, Q_F81, Q_HKY, Q_GTR)
 Q_indicator ~ dnCategorical( simplex(1, 1, 1, 1, 1) )
 moves.append( mvRandomGeometricWalk(Q_indicator, weight = 10, tune = FALSE) )
 
+# create a vector of sub rates to estimate overall substitution rate
+for (i in 1:Q_vec.size()) {
+  # loguniform prior to express lack of information on the magnitude
+  sub_rate_vec[i] ~ dnLoguniform(0.001, 1)
+  moves.append( mvScale(sub_rate_vec[i], weight = 5) )
+}
+
 # set Q and sub rates based on Q indicator
 Q := Q_vec[Q_indicator]
+sub_rate := sub_rate_vec[Q_indicator]
 
 # set alpha, the shape for the gamma variation among sites
 alpha ~ dnReversibleJumpMixture(1E8, dnUniform(0, 1E8), 0.5)
@@ -102,8 +105,22 @@ site_rates := fnDiscretizeGamma(alpha, alpha, 4)
 # use 4 as a convention - alternatively could set it to
 # another parameter and estimate that, a hierarchical model
 
+# set up the probability of invariant sites the same way
+p_inv ~ dnReversibleJumpMixture(0, dnBeta(1, 1), 0.5)
+# 0 if it is turned off, a uniform if not
+
+# initial value
+p_inv.setValue(0.5)
+
+# moves
+moves.append( mvRJSwitch(p_inv, weight = 10.0) )
+moves.append( mvScale(p_inv, weight = 10.0) )
+
+# indicator
+p_inv_indicator := ifelse(p_inv == 0, 0, 1)
+
 # finally define the CTMC model
-seq ~ dnPhyloCTMC(tree = phy, Q = Q, siteRates = site_rates, type = "DNA")
+seq ~ dnPhyloCTMC(tree = phy, Q = Q, branchRates = sub_rate, siteRates = site_rates, pInv = p_inv, type = "DNA")
 seq.clamp(nuclear)
 
 # make the model object
@@ -115,12 +132,12 @@ mymodel = model(phy)
 # monitors
 monitors.append( mnModel(filename = "output_nuclear_avg/nuclear_avg.log", printgen = 10, separator = TAB) )
 monitors.append( mnFile(filename = "output_nuclear_avg/nuclear_avg.trees", printgen = 10, phy) )
-monitors.append( mnScreen(printgen = 1000, Q_indicator, alpha_indicator) )
+monitors.append( mnScreen(printgen = 1000, Q_indicator, alpha_indicator, p_inv_indicator) )
 # to the screen we will just worry about the indicators
 
 # run MCMC
 mymcmc = mcmc(mymodel, moves, monitors, nruns = 2, combine = "mixed")
-mymcmc.run(generations = 50000, tuningInterval = 200, checkpointInterval = 100, checkpointFile = "output_nuclear_avg/nuclear_avg.state")
+mymcmc.run(generations = 20000, tuningInterval = 200, checkpointInterval = 100, checkpointFile = "output_nuclear_avg/nuclear_avg.state")
 
 # quit
 q()
