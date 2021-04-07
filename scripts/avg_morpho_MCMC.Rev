@@ -48,22 +48,17 @@ print("Trees done")
 ### 
 # set up substitution model
 
-# beta parameters for the state frequency distributions
-pi_loc ~ dnLognormal( 0.0, sd = 2*0.587405 )
+# beta parameter for the state frequency distributions
 pi_scale ~ dnLognormal( 0.0, sd = 2*0.587405 )
-# I got these from a tutorial no idea how to get to these numbers
-# note they are equal - a priori we assume symmetry between state transitions
+# we set up a mean 1 beta to make things symmetric
 
 # moves for them
-moves.append( mvScale(pi_loc, weight = 5) )
 moves.append( mvScale(pi_scale, weight = 5) )
 
 # do the same for er rates
-er_loc ~ dnLognormal( 0.0, sd = 2 * 0.587405 )
 er_scale ~ dnLognormal( 0.0, sd = 2*0.587405 )
 
 # moves for them
-moves.append( mvScale(er_loc, weight = 5) )
 moves.append( mvScale(er_scale, weight = 5) )
 
 # set up alpha and alpha indicator
@@ -110,9 +105,9 @@ for (i in 2:nStates) {
     Q_JC[idx] <- fnJC(i)
 
     # we also want to test the F81 and GTR model, however
-    Q_F81[idx] := fnF81( Simplex(fnDiscretizeBeta(pi_loc, pi_scale, i)) )
-    Q_GTR[idx] := fnGTR( Simplex(fnDiscretizeBeta(er_loc, er_scale, sum(1:(i - 1)))),
-                         Simplex(fnDiscretizeBeta(pi_loc, pi_scale, i)) )
+    Q_F81[idx] := fnF81( Simplex(fnDiscretizeBeta(pi_scale, pi_scale, i)) )
+    Q_GTR[idx] := fnGTR( Simplex(fnDiscretizeBeta(er_scale, er_scale, sum(1:(i - 1)))),
+                         Simplex(fnDiscretizeBeta(pi_scale, pi_scale, i)) )
 
     # indicator for this state size
     Q_indicator[idx] ~ dnCategorical( simplex(1, 1, 1) )
