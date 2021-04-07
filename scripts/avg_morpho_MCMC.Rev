@@ -5,6 +5,9 @@
 ############################################
 
 ######### TO-DO: Q MATRIX IS NOT BEING ASSIGNED AFTER FIRST ITERATION, GOD KNOWS WHY
+# Figured out about 1-state characters, fixed
+# Need to try out i -> idx solution and if not, try clamping outside of for loop
+# Need to consider categories of change inside each partition size
 
 ###
 # set up basic objects for the analysis
@@ -120,7 +123,7 @@ for (i in 2:nStates) {
     # set up CTMC for this size
     morphoCTMC[idx] ~ dnPhyloCTMC(tree = phy, siteRates = site_rates, 
                                  Q = Q[idx], type = "Standard")
-    morphoCTMC[idx].clamp(morpho_bystate[i])
+    morphoCTMC[idx].clamp(morpho_bystate[idx])
 
     # increment counter
     idx = idx + 1
