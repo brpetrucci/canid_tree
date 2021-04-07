@@ -122,5 +122,32 @@ monitors.append( mnScreen(printgen = 1000, Q_indicator, alpha_indicator) )
 mymcmc = mcmc(mymodel, moves, monitors, nruns = 2, combine = "mixed")
 mymcmc.run(generations = 50000, tuningInterval = 200, checkpointInterval = 100, checkpointFile = "output_nuclear_avg/nuclear_avg.state")
 
+###
+# get some analysis in
+
+# this segfaults if you put the outgroup
+# read tree trace
+trace = readTreeTrace("output_nuclear_avg/nuclear_avg.trees", treetype = "non-clock")
+#, outgroup = clade("Urocyon_cinereoargenteus"))
+
+# write MAP, MCC, and consensus tree to file
+map_tree = mapTree(treeTrace, "output_nuclear_avg/map_tree_navg.tree")
+mcc_tree = mccTree(treeTrace, "output_nuclear_avg/mcc_tree_navg.tree")
+con_tree = consensusTree(treeTrace, "output_nuclear_avg/con_tree_navg.tree")
+
+# and write posterior probability of important clades to a file
+canina <- clade("Canis_lupus", "Canis_latrans", "Canis_simensis", 
+                "Canis_aureus", "Cuon_alpinus", "Lycaon_pictus", 
+                "Canis_adustus", "Canis_mesomelas", "Canis_dirus")
+wlc_no_dirus <- clade("Canis_lupus", "Canis_latrans", "Canis_simensis", 
+                "Canis_aureus", "Cuon_alpinus", "Lycaon_pictus", 
+                "Canis_adustus", "Canis_mesomelas")
+wlc_no_jackals <- clade("Canis_lupus", "Canis_latrans", "Canis_simensis", 
+                "Canis_aureus", "Cuon_alpinus", "Lycaon_pictus", "Canis_dirus")
+
+write("Posterior probability of Canina: " + treeTrace.cladeProbability(canina) + "; Canina minus dire wolf: " +
+      treeTrace.cladeProbability(wlc_no_dirus) + "; Canina minus jackals: " + treeTrace.cladeProbability(wlc_no_jackals), 
+      filename = "output_nuclear_avg/cladeProbs.txt")
+
 # quit
 q()
