@@ -5,7 +5,6 @@
 ############################################
 
 ######### TO-DO: Q MATRIX IS NOT BEING ASSIGNED AFTER FIRST ITERATION, GOD KNOWS WHY
-# Figured out about 1-state characters, fixed
 # Need to try out i -> idx solution and if not, try clamping outside of for loop
 # Need to consider categories of change inside each partition size
 
@@ -106,7 +105,9 @@ for (i in 2:nStates) {
   if (nc > 0) {
     # the simple Mk model takes a JC matrix
     Q_JC[idx] <- fnJC(i)
-
+    print(i)
+    print(morpho_bystate[2])
+    print(Q_JC[idx])
     # we also want to test the F81 and GTR model, however
     Q_F81[idx] := fnF81( Simplex(fnDiscretizeBeta(pi_scale, pi_scale, i)) )
     Q_GTR[idx] := fnGTR( Simplex(fnDiscretizeBeta(er_scale, er_scale, sum(1:(i - 1)))),
