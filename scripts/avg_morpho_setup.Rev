@@ -1,0 +1,66 @@
+############################################
+## Model averaging for morphological data ##
+##         EEOB 563 final project         ##
+##        Bruno do Rosario Petrucci       ##
+############################################
+
+######### TO-DO: Q MATRIX IS NOT BEING ASSIGNED AFTER FIRST ITERATION, GOD KNOWS WHY
+# Need to try out i -> idx solution and if not, try clamping outside of for loop
+# Need to consider categories of change inside each partition size
+
+###
+# set up basic objects for the analysis
+
+# base terminal for project
+baseDir <- "/home/petrucci/canid_tree/"
+
+# read morphological data
+morpho <- readDiscreteCharacterData(baseDir + "data/extant_morpho.nex")
+
+# some quantities that we may like to use later
+nTaxa <- morpho.ntaxa()
+nBranches <- 2 * nTaxa - 3
+taxa <- morpho.taxa()
+
+# set up moves and monitor vectors
+moves = VectorMoves()
+monitors = VectorMonitors()
+
+###
+# set up tree model
+
+# topology
+top ~ dnUniformTopology(taxa)
+moves.append( mvNNI(top, weight = nTaxa / 2) )
+moves.append( mvSPR(top, weight = nTaxa / 10) )
+
+# branch lengths
+for (i in 1:nBranches) {
+  br_lens[i] ~ dnExponential(10)
+  moves.append( mvScale(br_lens[i], weight = 1) )
+}
+
+# tree length, just to keep track of it
+TL := sum(br_lens)
+
+# combine topology and branch lengths
+phy := treeAssembly(top, br_lens)
+
+### 
+# set up substitution model
+
+# set up alpha and alpha indicator
+alpha ~ dnReversibleJumpMixture(1E8, dnUniform(0, 1E8), 0.5)
+
+# initial value
+alpha.setValue(1.0)
+
+# moves
+moves.append( mvRJSwitch(alpha, weight = 10.0) )
+moves.append( mvScale(alpha, weight = 10.0) )
+
+# indicator
+alpha_indicator := ifelse(alpha == 1E8, 0, 1)
+
+# set up site rates with the discretized gamma
+site_rates := fnDiscretizeGamma(alpha, alpha, 4)

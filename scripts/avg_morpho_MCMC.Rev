@@ -1,152 +1,103 @@
-############################################
-## Model averaging for morphological data ##
-##         EEOB 563 final project         ##
-##        Bruno do Rosario Petrucci       ##
-############################################
-
-######### TO-DO: Q MATRIX IS NOT BEING ASSIGNED AFTER FIRST ITERATION, GOD KNOWS WHY
-# Need to try out i -> idx solution and if not, try clamping outside of for loop
-# Need to consider categories of change inside each partition size
-
-###
-# set up basic objects for the analysis
-
-# base terminal for project
-baseDir <- "/home/petrucci/canid_tree/"
-
-# read morphological data
-morpho <- readDiscreteCharacterData(baseDir + "data/extant_morpho.nex")
-
-# some quantities that we may like to use later
-nTaxa <- morpho.ntaxa()
-nBranches <- 2 * nTaxa - 3
-taxa <- morpho.taxa()
-
-# set up moves and monitor vectors
-moves = VectorMoves()
-monitors = VectorMonitors()
-
-###
-# set up tree model
-
-# topology
-top ~ dnUniformTopology(taxa)
-moves.append( mvNNI(top, weight = nTaxa / 2) )
-moves.append( mvSPR(top, weight = nTaxa / 10) )
-
-# branch lengths
-for (i in 1:nBranches) {
-  br_lens[i] ~ dnExponential(10)
-  moves.append( mvScale(br_lens[i], weight = 1) )
-}
-
-# tree length, just to keep track of it
-TL := sum(br_lens)
-
-# combine topology and branch lengths
-phy := treeAssembly(top, br_lens)
-
-print("Trees done")
-### 
-# set up substitution model
-
-# beta parameter for the state frequency distributions
-pi_scale ~ dnLognormal( 0.0, sd = 2*0.587405 )
-# we set up a mean 1 beta to make things symmetric
-
-# moves for them
-moves.append( mvScale(pi_scale, weight = 5) )
-
-# do the same for er rates
-er_scale ~ dnLognormal( 0.0, sd = 2*0.587405 )
-
-# moves for them
-moves.append( mvScale(er_scale, weight = 5) )
-
-# set up alpha and alpha indicator
-alpha ~ dnReversibleJumpMixture(1E8, dnUniform(0, 1E8), 0.5)
-
-# initial value
-alpha.setValue(1.0)
-
-# moves
-moves.append( mvRJSwitch(alpha, weight = 10.0) )
-moves.append( mvScale(alpha, weight = 10.0) )
-
-# indicator
-alpha_indicator := ifelse(alpha == 1E8, 0, 1)
-
-# set up site rates with the discretized gamma
-site_rates := fnDiscretizeGamma(alpha, alpha, 4)
-
-# maximum number of states in the data set
-nStates <- 4
-
-# separate index for the numbers between 1:nStates such that there are
-# characters with the respective sample size
-idx = 1
-
-morpho_bystate[1] <- morpho
+# source setup
+source("scripts/avg_morpho_setup.Rev")
 
 # separate models by number of states present
-for (i in 2:nStates) {
+for (k in 2:4) {
+k <- 4
   # temporary copy
-  morpho_bystate[i] <- morpho
+  morpho_bystate <- morpho
 
   # keep characters only with sample space of this size
-  morpho_bystate[i].setNumStatesPartition(i)
-  # note this finds states with maximum number (i-1), 
+  morpho_bystate.setNumStatesPartition(k)
+  # note this finds states with maximum number (k-1), 
   # not count every state in every character
- 
-  # number of characters in this partition
-  nc = morpho_bystate[i].nchar()
 
-  # if there are any, do the thing
-  if (nc > 0) {
-    # the simple Mk model takes a JC matrix
-    Q_JC[idx] <- fnJC(i)
-    print(i)
-    print(morpho_bystate[2])
-    print(Q_JC[idx])
-    # we also want to test the F81 and GTR model, however
-    Q_F81[idx] := fnF81( Simplex(fnDiscretizeBeta(pi_scale, pi_scale, i)) )
-    Q_GTR[idx] := fnGTR( Simplex(fnDiscretizeBeta(er_scale, er_scale, sum(1:(i - 1)))),
-                         Simplex(fnDiscretizeBeta(pi_scale, pi_scale, i)) )
+  # er scale - if it is 6200, equivalent to no categories among states
+  er_scale ~ dnReversibleJumpMixture(62000, dnLognormal(0.0, sd = 2 * 0.587405), 0.5)
+  
+  # need this multiplier for the case of when er_scale is 62000
+  m_er_dist ~ dnExponential(1)
 
-    # indicator for this state size
-    Q_indicator[idx] ~ dnCategorical( simplex(1, 1, 1) )
-    moves.append( mvRandomGeometricWalk(Q_indicator[idx], weight = 5, tune = FALSE) )
+  # initial value
+  er_scale.setValue(1)
 
-    # and set up final Q for this iteration
-    Q_vec[idx] := v(Q_JC[idx], Q_F81[idx], Q_GTR[idx])
-    Q[idx] := Q_vec[idx][Q_indicator[idx]]
-    
-    # set up CTMC for this size
-    morphoCTMC[idx] ~ dnPhyloCTMC(tree = phy, siteRates = site_rates, 
-                                 Q = Q[idx], type = "Standard")
-    morphoCTMC[idx].clamp(morpho_bystate[idx])
+  # moves
+  moves.append( mvRJSwitch(er_scale, weight = 10.0) )
+  moves.append( mvScale(er_scale, weight = 10.0) )
+  moves.append( mvScale(m_er_dist, weight = 5) )
+  
+  # same for pi
+  pi_scale ~ dnReversibleJumpMixture(62000, dnLognormal(0.0, sd = 2 * 0.587405), 0.5)
+  m_pi_dist ~ dnExponential(1)
 
-    # increment counter
-    idx = idx + 1
+  # initial value
+  pi_scale.setValue(1)
+  
+  # moves
+  moves.append( mvRJSwitch(pi_scale, weight = 10.0) )
+  moves.append( mvScale(pi_scale, weight = 10.0) )
+  moves.append( mvScale(m_pi_dist, weight = 5) )
+
+  # indicators
+  er_indicator := ifelse(er_scale == 62000, 0, 1)
+  pi_indicator := ifelse(pi_scale == 62000, 0, 1)
+
+  # and the corresponding multipliers
+  m_er := ifelse(er_scale == 62000, m_er_dist, 1)
+  m_pi := ifelse(pi_scale == 62000, m_pi_dist, 1)
+
+  # get the category values
+  er_cats := fnDiscretizeBeta(er_scale, er_scale, 4)
+  pi_cats := fnDiscretizeBeta(pi_scale, pi_scale, 4)
+
+  # we want to test the JC, F81 and GTR model
+  # for each of the categories, set a matrix
+  for (j in 1:4) {
+    Q_JC[j] <- fnJC(k)
+    Q_F81[j] := fnF81(m_pi * Simplex(fnDiscretizeBeta(pi_cats[j], pi_cats[j], k)))
+    Q_GTR[j] := fnGTR(m_er * Simplex(fnDiscretizeBeta(er_cats[j], er_cats[j], sum(1:(k-1)))),  
+                      m_pi * Simplex(fnDiscretizeBeta(pi_cats[j], pi_cats[j], k))) 
   }
+ 
+  # indicator for this state size   
+  Q_indicator ~ dnCategorical( simplex(1, 1, 1) )
+  moves.append( mvRandomGeometricWalk(Q_indicator, weight = 5, tune = FALSE) )
+
+  # and set up final Q for this iteration
+  Q_vec := v(Q_JC, Q_F81, Q_GTR)
+  Q := Q_vec[Q_indicator]
+
+  # finally, site matrices to see what proportion of states is in which of the 4 categories
+  matrix_probs ~ dnDirichlet( rep(1, 4) )
+  moves.append( mvBetaSimplex(matrix_probs, weight = 3) )
+  moves.append( mvDirichletSimplex(matrix_probs, weight = 1.5) )
+    
+  # set up CTMC for this size
+  morphoCTMC ~ dnPhyloCTMC(tree = phy, siteRates = site_rates, 
+                           Q = Q, siteMatrices = matrix_probs, type = "Standard")
+  morphoCTMC.clamp(morpho_bystate)
+
+  # make the model object
+  mymodel = model(phy)
+
+  ###
+  # set up monitors and run
+  
+  # clear monitors
+  clear(monitors)
+  monitors = VectorMonitors()
+
+  # monitors
+  monitors.append( mnModel(filename = "output_morpho_avg/output_morpho_avg_" + k + "/morpho_avg_" + k + ".log", printgen = 1, separator = TAB) )
+  monitors.append( mnFile(filename = "output_morpho_avg/output_morpho_avg_" + k + "/morpho_avg_" + k + ".trees", printgen = 10, phy) )
+  monitors.append( mnScreen(printgen = 1000, Q_indicator, alpha_indicator, er_indicator, pi_indicator) )
+  # to the screen we will just worry about the indicators
+
+  # run MCMC
+  mymcmc = mcmc(mymodel, moves, monitors, nruns = 2, combine = "mixed")
+  mymcmc.run(generations = 100, tuningInterval = 200, checkpointInterval = 100, checkpointFile = "output_morpho_avg/output_morpho_avg_" + k + "/morpho_avg_" + k + ".state")
+  
 }
 
-# make the model object
-mymodel = model(phy)
-
-###
-# set up monitors and run
-
-# monitors
-monitors.append( mnModel(filename = "output_morpho_avg/morpho_avg.log", printgen = 10, separator = TAB) )
-monitors.append( mnFile(filename = "output_morpho_avg/morpho_avg.trees", printgen = 10, phy) )
-monitors.append( mnScreen(printgen = 1000, Q_indicator, alpha_indicator) )
-# to the screen we will just worry about the indicators
-
-print("hello")
-# run MCMC
-mymcmc = mcmc(mymodel, moves, monitors, nruns = 2, combine = "mixed")
-mymcmc.run(generations = 100000, tuningInterval = 200, checkpointInterval = 100, checkpointFile = "output_morpho_avg/morpho_avg.state")
-print("hello")
 # quit
 q()
