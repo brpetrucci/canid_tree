@@ -1,8 +1,7 @@
 # source setup
 source("scripts/avg_morpho_setup.Rev")
 
-# separate models by number of states present
-for (k in 2:4) {
+k <- 2
   # temporary copy
   morpho_bystate <- morpho
 
@@ -15,7 +14,7 @@ for (k in 2:4) {
   er_scale ~ dnReversibleJumpMixture(62000, dnLognormal(1, sd = 2 * 0.587405), 0.5)
   
   # need this multiplier for the case of when er_scale is 62000
-  m_er ~ dnExponential(1)
+  m_er_dist ~ dnLognormal(1, sd = 2 * 0.587405)
 
   # initial value
   er_scale.setValue(1)
@@ -23,11 +22,11 @@ for (k in 2:4) {
   # moves
   moves.append( mvRJSwitch(er_scale, weight = 10.0) )
   moves.append( mvScale(er_scale, weight = 10.0) )
-  moves.append( mvScale(m_er, weight = 5) )
+  moves.append( mvScale(m_er_dist, weight = 5) )
   
   # same for pi
   pi_scale ~ dnReversibleJumpMixture(62000, dnLognormal(1, sd = 2 * 0.587405), 0.5)
-  m_pi ~ dnExponential(1)
+  m_pi_dist ~ dnLognormal(1, sd = 2 * 0.587405)
 
   # initial value
   pi_scale.setValue(1)
@@ -35,15 +34,15 @@ for (k in 2:4) {
   # moves
   moves.append( mvRJSwitch(pi_scale, weight = 10.0) )
   moves.append( mvScale(pi_scale, weight = 10.0) )
-  moves.append( mvScale(m_pi, weight = 5) )
+  moves.append( mvScale(m_pi_dist, weight = 5) )
 
   # indicators
   er_indicator := ifelse(er_scale == 62000, 0, 1)
   pi_indicator := ifelse(pi_scale == 62000, 0, 1)
 
   # and the corresponding multipliers
-  #m_er := ifelse(er_scale == 62000, m_er_dist, 1)
-  #m_pi := ifelse(pi_scale == 62000, m_pi_dist, 1)
+  m_er := ifelse(er_scale == 62000, m_er_dist, 1)
+  m_pi := ifelse(pi_scale == 62000, m_pi_dist, 1)
 
   # get the category values
   er_cats := fnDiscretizeBeta(er_scale, er_scale, 4)
@@ -87,7 +86,7 @@ for (k in 2:4) {
   monitors = VectorMonitors()
 
   # monitors
-  monitors.append( mnModel(filename = "output_morpho_avg/output_morpho_avg_" + k + "/morpho_avg_" + k + ".log", printgen = 1, separator = TAB) )
+  monitors.append( mnModel(filename = "output_morpho_avg/output_morpho_avg_" + k + "/morpho_avg_" + k + ".log", printgen = 10, separator = TAB) )
   monitors.append( mnFile(filename = "output_morpho_avg/output_morpho_avg_" + k + "/morpho_avg_" + k + ".trees", printgen = 10, phy) )
   monitors.append( mnScreen(printgen = 1000, Q_indicator, alpha_indicator, er_indicator, pi_indicator) )
   # to the screen we will just worry about the indicators
@@ -95,8 +94,6 @@ for (k in 2:4) {
   # run MCMC
   mymcmc = mcmc(mymodel, moves, monitors, nruns = 2, combine = "mixed")
   mymcmc.run(generations = 50000, tuningInterval = 200, checkpointInterval = 100, checkpointFile = "output_morpho_avg/output_morpho_avg_" + k + "/morpho_avg_" + k + ".state")
-  
-}
-
+ 
 # quit
 q()

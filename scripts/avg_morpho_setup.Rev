@@ -4,10 +4,6 @@
 ##        Bruno do Rosario Petrucci       ##
 ############################################
 
-######### TO-DO: Q MATRIX IS NOT BEING ASSIGNED AFTER FIRST ITERATION, GOD KNOWS WHY
-# Need to try out i -> idx solution and if not, try clamping outside of for loop
-# Need to consider categories of change inside each partition size
-
 ###
 # set up basic objects for the analysis
 
