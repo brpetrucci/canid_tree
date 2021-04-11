@@ -3,7 +3,6 @@ source("scripts/avg_morpho_setup.Rev")
 
 # separate models by number of states present
 for (k in 2:4) {
-k <- 4
   # temporary copy
   morpho_bystate <- morpho
 
@@ -54,9 +53,9 @@ k <- 4
   # for each of the categories, set a matrix
   for (j in 1:4) {
     Q_JC[j] <- fnJC(k)
-    Q_F81[j] := fnF81(m_pi * Simplex(fnDiscretizeBeta(pi_cats[j], pi_cats[j], k)))
-    Q_GTR[j] := fnGTR(m_er * Simplex(fnDiscretizeBeta(er_cats[j], er_cats[j], sum(1:(k-1)))),  
-                      m_pi * Simplex(fnDiscretizeBeta(pi_cats[j], pi_cats[j], k))) 
+    Q_F81[j] := fnF81(Simplex(m_pi * fnDiscretizeBeta(pi_cats[j], pi_cats[j],  k)))
+    Q_GTR[j] := fnGTR(Simplex(m_er * fnDiscretizeBeta(er_cats[j], er_cats[j], sum(1:(k-1)))),  
+                      Simplex(m_pi * fnDiscretizeBeta(pi_cats[j], pi_cats[j],  k)))
   }
  
   # indicator for this state size   
