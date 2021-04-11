@@ -12,10 +12,10 @@ for (k in 2:4) {
   # not count every state in every character
 
   # er scale - if it is 6200, equivalent to no categories among states
-  er_scale ~ dnReversibleJumpMixture(62000, dnLognormal(0.0, sd = 2 * 0.587405), 0.5)
+  er_scale ~ dnReversibleJumpMixture(62000, dnLognormal(1, sd = 2 * 0.587405), 0.5)
   
   # need this multiplier for the case of when er_scale is 62000
-  m_er_dist ~ dnExponential(1)
+  m_er ~ dnExponential(1)
 
   # initial value
   er_scale.setValue(1)
@@ -23,11 +23,11 @@ for (k in 2:4) {
   # moves
   moves.append( mvRJSwitch(er_scale, weight = 10.0) )
   moves.append( mvScale(er_scale, weight = 10.0) )
-  moves.append( mvScale(m_er_dist, weight = 5) )
+  moves.append( mvScale(m_er, weight = 5) )
   
   # same for pi
-  pi_scale ~ dnReversibleJumpMixture(62000, dnLognormal(0.0, sd = 2 * 0.587405), 0.5)
-  m_pi_dist ~ dnExponential(1)
+  pi_scale ~ dnReversibleJumpMixture(62000, dnLognormal(1, sd = 2 * 0.587405), 0.5)
+  m_pi ~ dnExponential(1)
 
   # initial value
   pi_scale.setValue(1)
@@ -35,15 +35,15 @@ for (k in 2:4) {
   # moves
   moves.append( mvRJSwitch(pi_scale, weight = 10.0) )
   moves.append( mvScale(pi_scale, weight = 10.0) )
-  moves.append( mvScale(m_pi_dist, weight = 5) )
+  moves.append( mvScale(m_pi, weight = 5) )
 
   # indicators
   er_indicator := ifelse(er_scale == 62000, 0, 1)
   pi_indicator := ifelse(pi_scale == 62000, 0, 1)
 
   # and the corresponding multipliers
-  m_er := ifelse(er_scale == 62000, m_er_dist, 1)
-  m_pi := ifelse(pi_scale == 62000, m_pi_dist, 1)
+  #m_er := ifelse(er_scale == 62000, m_er_dist, 1)
+  #m_pi := ifelse(pi_scale == 62000, m_pi_dist, 1)
 
   # get the category values
   er_cats := fnDiscretizeBeta(er_scale, er_scale, 4)
@@ -53,9 +53,9 @@ for (k in 2:4) {
   # for each of the categories, set a matrix
   for (j in 1:4) {
     Q_JC[j] <- fnJC(k)
-    Q_F81[j] := fnF81(Simplex(m_pi * fnDiscretizeBeta(pi_cats[j], pi_cats[j],  k)))
-    Q_GTR[j] := fnGTR(Simplex(m_er * fnDiscretizeBeta(er_cats[j], er_cats[j], sum(1:(k-1)))),  
-                      Simplex(m_pi * fnDiscretizeBeta(pi_cats[j], pi_cats[j],  k)))
+    Q_F81[j] := fnF81(Simplex(fnDiscretizeBeta(m_pi * pi_cats[j], m_pi * pi_cats[j], k)))
+    Q_GTR[j] := fnGTR(Simplex(fnDiscretizeBeta(m_er * er_cats[j], m_er * er_cats[j], sum(1:(k - 1)))),  
+                      Simplex(fnDiscretizeBeta(m_pi * pi_cats[j], m_pi * pi_cats[j], k)))
   }
  
   # indicator for this state size   
@@ -94,7 +94,7 @@ for (k in 2:4) {
 
   # run MCMC
   mymcmc = mcmc(mymodel, moves, monitors, nruns = 2, combine = "mixed")
-  mymcmc.run(generations = 100, tuningInterval = 200, checkpointInterval = 100, checkpointFile = "output_morpho_avg/output_morpho_avg_" + k + "/morpho_avg_" + k + ".state")
+  mymcmc.run(generations = 50000, tuningInterval = 200, checkpointInterval = 100, checkpointFile = "output_morpho_avg/output_morpho_avg_" + k + "/morpho_avg_" + k + ".state")
   
 }
 
