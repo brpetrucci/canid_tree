@@ -1,7 +1,7 @@
 # source setup
 source("scripts/avg_morpho_setup.Rev")
 
-k <- 2
+for (k in 2:4) {
   # temporary copy
   morpho_bystate <- morpho
 
@@ -11,10 +11,10 @@ k <- 2
   # not count every state in every character
 
   # er scale - if it is 6200, equivalent to no categories among states
-  er_scale ~ dnReversibleJumpMixture(62000, dnLognormal(1, sd = 2 * 0.587405), 0.5)
+  er_scale ~ dnReversibleJumpMixture(62000, dnUniform(0, 62000), 0.5) 
   
   # need this multiplier for the case of when er_scale is 62000
-  m_er_dist ~ dnLognormal(1, sd = 2 * 0.587405)
+  m_er_dist ~ dnUniform(0, 62000)
 
   # initial value
   er_scale.setValue(1)
@@ -25,8 +25,8 @@ k <- 2
   moves.append( mvScale(m_er_dist, weight = 5) )
   
   # same for pi
-  pi_scale ~ dnReversibleJumpMixture(62000, dnLognormal(1, sd = 2 * 0.587405), 0.5)
-  m_pi_dist ~ dnLognormal(1, sd = 2 * 0.587405)
+  pi_scale ~ dnReversibleJumpMixture(62000, dnUniform(0, 62000), 0.5) 
+  m_pi_dist ~ dnUniform(0, 62000)
 
   # initial value
   pi_scale.setValue(1)
@@ -94,6 +94,7 @@ k <- 2
   # run MCMC
   mymcmc = mcmc(mymodel, moves, monitors, nruns = 2, combine = "mixed")
   mymcmc.run(generations = 50000, tuningInterval = 200, checkpointInterval = 100, checkpointFile = "output_morpho_avg/output_morpho_avg_" + k + "/morpho_avg_" + k + ".state")
+}
  
 # quit
 q()

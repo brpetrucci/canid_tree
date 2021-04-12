@@ -1,0 +1,111 @@
+Already up-to-date.
+Building rb
+CC=/opt/rit/spack-app/linux-rhel7-x86_64/gcc-4.8.5/gcc-7.3.0-xegsmw4io2dcncdni4rqhfmhuzljcg3l/bin/gcc  CXX=/opt/rit/spack-app/linux-rhel7-x86_64/gcc-4.8.5/gcc-7.3.0-xegsmw4io2dcncdni4rqhfmhuzljcg3l/bin/g++
+Generating version numbers in GitVersion.cpp
+Running './regenerate.sh /home/petrucci/revbayes/projects/cmake/build
+Making build directory '/home/petrucci/revbayes/projects/cmake/build'
+Generating src/generated_include_dirs.cmake
+Generating src/libs/CMakeLists.txt
+Generating src/core/CMakeLists.txt
+Generating src/revlanguage/CMakeLists.txt
+Generating src/help2yml/CMakeLists.txt
+Generating src/cmd/CMakeLists.txt
+
+
+Running 'cmake ../../../src -DRB_EXEC_NAME=rb ' in /home/petrucci/revbayes/projects/cmake/build
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/petrucci/revbayes/projects/cmake/build
+
+Running 'make -j 4' in /home/petrucci/revbayes/projects/cmake/build
+[  2%] Built target rb-libs
+Scanning dependencies of target rb-parser
+[ 52%] Built target rb-core
+[ 52%] Building CXX object revlanguage/CMakeFiles/rb-parser.dir/utils/GitVersion.cpp.o
+[ 53%] Linking CXX static library librb-parser.a
+[100%] Built target rb-parser
+[100%] Linking CXX executable ../rb
+[100%] Built target rb
+
+RevBayes version (1.1.1)
+Build from development (rapture-649-g20534c) on Sun Apr 11 14:29:00 CDT 2021
+
+Visit the website www.RevBayes.com for more information about RevBayes.
+
+RevBayes is free software released under the GPL license, version 3. Type 'license()' for details.
+
+To quit RevBayes type 'quit()' or 'q()'.
+
+
+> source("scripts/avg_morpho_MCMC.Rev")
+   Processing file "scripts/avg_morpho_MCMC.Rev"
+   Processing file "scripts/avg_morpho_setup.Rev"
+   Successfully read one character matrix from file '/home/petrucci/canid_tree/data/extant_morpho.nex'
+   Processing of file "scripts/avg_morpho_setup.Rev" completed
+   NOTE: setNumStatesPartition() partitions by the maximum observed state, not the total number of observed states.
+
+   Running MCMC simulation
+   This simulation runs 2 independent replicates.
+   The simulator uses 30 different moves in a random move schedule with 102.5 moves per iteration
+
+Iter        |      Posterior   |     Likelihood   |          Prior   |   alpha_indi..   |   er_indicator   |   pi_indicator   |    Q_indicator   |    elapsed   |        ETA   |
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+0           |       -121.058   |        -72.275   |       -48.7832   |              1   |              1   |              1   |              1   |   00:00:00   |   --:--:--   |
+1000        |        -97.363   |       -55.3721   |       -41.9909   |              1   |              1   |              0   |              1   |   00:08:24   |   --:--:--   |
+2000        |       -91.4742   |        -58.742   |       -32.7321   |              1   |              0   |              0   |              2   |   00:16:58   |   06:47:12   |
+3000        |       -110.847   |       -61.1547   |       -49.6924   |              1   |              0   |              1   |              1   |   00:25:31   |   06:39:45   |
+4000        |       -87.5712   |       -59.7051   |        -27.866   |              0   |              1   |              0   |              1   |   00:34:03   |   06:31:34   |
+5000        |       -78.3524   |       -55.1849   |       -23.1674   |              0   |              1   |              0   |              2   |   00:42:28   |   06:22:12   |
+6000        |       -85.7026   |       -57.4547   |       -28.2479   |              0   |              1   |              0   |              2   |   00:51:01   |   06:14:07   |
+7000        |       -109.161   |       -64.3843   |        -44.777   |              1   |              0   |              0   |              2   |   00:59:36   |   06:06:06   |
+8000        |        -79.383   |       -55.6142   |       -23.7688   |              0   |              0   |              1   |              1   |   01:08:03   |   05:57:15   |
+9000        |       -71.7848   |       -59.0034   |       -12.7814   |              0   |              0   |              0   |              1   |   01:16:27   |   05:48:16   |
+10000       |       -91.5867   |        -61.998   |       -29.5887   |              1   |              0   |              0   |              1   |   01:24:58   |   05:39:52   |
+11000       |       -97.8601   |       -61.9564   |       -35.9036   |              1   |              1   |              0   |              2   |   01:33:29   |   05:31:26   |
+12000       |       -84.0324   |       -61.5857   |       -22.4466   |              0   |              1   |              0   |              2   |   01:41:59   |   05:22:56   |
+13000       |       -83.5875   |       -59.5018   |       -24.0858   |              0   |              0   |              1   |              1   |   01:50:27   |   05:14:21   |
+14000       |       -92.7708   |       -61.4856   |       -31.2852   |              1   |              0   |              0   |              1   |   01:58:56   |   05:05:49   |
+15000       |       -74.2158   |       -58.4613   |       -15.7545   |              0   |              0   |              0   |              3   |   02:07:24   |   04:57:16   |
+16000       |       -111.967   |       -59.6418   |        -52.325   |              1   |              1   |              1   |              1   |   02:15:53   |   04:48:45   |
+17000       |       -70.3577   |        -55.935   |       -14.4227   |              0   |              0   |              0   |              2   |   02:24:32   |   04:40:33   |
+18000       |       -76.3047   |       -57.1471   |       -19.1576   |              0   |              1   |              0   |              2   |   02:33:02   |   04:32:03   |
+19000       |       -84.3478   |         -61.28   |       -23.0678   |              0   |              0   |              1   |              1   |   02:41:37   |   04:23:41   |
+
+
+Iter        |      Posterior   |     Likelihood   |          Prior   |   alpha_indi..   |   er_indicator   |   pi_indicator   |    Q_indicator   |    elapsed   |        ETA   |
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+20000       |       -102.498   |       -58.0233   |       -44.4751   |              1   |              1   |              0   |              2   |   02:50:07   |   04:15:10   |
+21000       |        -68.773   |        -55.567   |        -13.206   |              0   |              0   |              0   |              2   |   02:58:43   |   04:06:47   |
+22000       |       -93.2348   |       -57.1936   |       -36.0412   |              0   |              1   |              1   |              1   |   03:07:18   |   03:58:22   |
+23000       |       -77.4583   |       -58.0881   |       -19.3702   |              0   |              0   |              1   |              1   |   03:15:44   |   03:49:46   |
+24000       |       -112.897   |       -62.3074   |       -50.5892   |              1   |              1   |              1   |              1   |   03:24:13   |   03:41:14   |
+25000       |       -84.3083   |       -57.1988   |       -27.1095   |              1   |              0   |              0   |              1   |   03:32:45   |   03:32:45   |
+26000       |       -83.6825   |       -60.5976   |       -23.0849   |              0   |              1   |              0   |              1   |   03:41:07   |   03:24:06   |
+27000       |        -95.005   |       -57.9552   |       -37.0498   |              0   |              1   |              1   |              1   |   03:49:34   |   03:15:33   |
+28000       |       -77.1947   |       -55.7959   |       -21.3988   |              0   |              1   |              0   |              2   |   03:57:58   |   03:06:58   |
+29000       |       -94.6048   |       -54.8742   |       -39.7306   |              1   |              1   |              0   |              2   |   04:06:26   |   02:58:27   |
+30000       |       -85.7338   |       -60.2411   |       -25.4926   |              0   |              1   |              0   |              2   |   04:14:50   |   02:49:53   |
+31000       |       -85.2043   |       -57.6942   |         -27.51   |              1   |              0   |              0   |              3   |   04:23:15   |   02:41:20   |
+32000       |       -72.2337   |       -60.9467   |       -11.2871   |              0   |              0   |              0   |              2   |   04:31:41   |   02:32:49   |
+33000       |       -66.1514   |       -55.3987   |       -10.7527   |              0   |              0   |              0   |              2   |   04:40:09   |   02:24:19   |
+34000       |       -98.4846   |       -57.0059   |       -41.4787   |              1   |              1   |              0   |              1   |   04:48:28   |   02:15:44   |
+35000       |       -111.661   |       -63.1694   |       -48.4913   |              1   |              0   |              1   |              1   |   04:56:53   |   02:07:14   |
+36000       |       -75.5225   |       -55.4689   |       -20.0535   |              0   |              1   |              0   |              2   |   05:05:12   |   01:58:41   |
+37000       |       -96.9796   |       -55.9664   |       -41.0132   |              1   |              0   |              1   |              1   |   05:13:28   |   01:50:08   |
+38000       |        -84.125   |       -56.2167   |       -27.9083   |              0   |              1   |              0   |              2   |   05:21:59   |   01:41:40   |
+39000       |       -65.4146   |       -54.3599   |       -11.0547   |              0   |              0   |              0   |              2   |   05:30:16   |   01:33:09   |
+
+
+Iter        |      Posterior   |     Likelihood   |          Prior   |   alpha_indi..   |   er_indicator   |   pi_indicator   |    Q_indicator   |    elapsed   |        ETA   |
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+40000       |       -99.6892   |       -67.5068   |       -32.1824   |              1   |              0   |              0   |              3   |   05:38:33   |   01:24:38   |
+41000       |       -109.933   |       -62.8567   |       -47.0766   |              1   |              1   |              0   |              2   |   05:47:03   |   01:16:10   |
+42000       |       -79.4925   |       -53.1989   |       -26.2936   |              0   |              1   |              0   |              2   |   05:55:33   |   01:07:43   |
+43000       |        -103.36   |       -59.8209   |       -43.5387   |              1   |              1   |              0   |              1   |   06:03:52   |   00:59:14   |
+44000       |       -70.9379   |       -58.8375   |       -12.1004   |              0   |              0   |              0   |              1   |   06:12:17   |   00:50:45   |
+45000       |        -104.66   |       -54.9513   |       -49.7084   |              1   |              1   |              1   |              1   |   06:20:51   |   00:42:19   |
+46000       |       -78.9396   |       -58.2549   |       -20.6847   |              0   |              0   |              1   |              1   |   06:29:20   |   00:33:51   |
+47000       |       -86.1259   |       -61.8369   |        -24.289   |              0   |              1   |              0   |              1   |   06:37:40   |   00:25:22   |
+48000       |       -111.394   |       -53.4518   |       -57.9421   |              1   |              1   |              1   |              1   |   06:46:04   |   00:16:55   |
+49000       |        -85.639   |       -56.7019   |       -28.9371   |              1   |              0   |              0   |              1   |   06:54:29   |   00:08:27   |
+50000       |       -94.3273   |       -59.4408   |       -34.8865   |              1   |              0   |              1   |              1   |   07:02:56   |   00:00:00   |

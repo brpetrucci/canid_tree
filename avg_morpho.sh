@@ -4,13 +4,13 @@
 
 #SBATCH --cpus-per-task=16
 
-#SBATCH --time=10:00:00
+#SBATCH --time=2-01:00:00
 
-#SBATCH --output=output_morpho_avg/job.%J.out
+#SBATCH --output=output_morpho_avg/output_morpho_avg/job.%J.out
 
-#SBATCH --error=output_morpho_avg/job.%J.err
+#SBATCH --error=output_morpho_avg/output_morpho_avg/job.%J.err
 
-#SBATCH --job-name="morpho_avg" 
+#SBATCH --job-name="morpho_avg"
 
 #SBATCH --mail-user=petrucci@iastate.edu
 #SBATCH --mail-type=BEGIN
