@@ -1,0 +1,223 @@
+###########################################
+## Combined-evidence analysis of DNA and ##
+## morphological data with the FBD model ##
+##                   ---                 ##
+##         EEOB 563 final project        ##
+##       Bruno do Rosario Petrucci       ##
+###########################################
+
+###
+# set up basic objects for the analysis
+
+# taxa - this includes extant species and extinct species 
+taxa <- readTaxonData("data/taxa_clean.tsv")
+
+# read nuclear DNA data
+nuclear <- readDiscreteCharacterData("data/nuclear.nex")
+
+# and morphological data
+morpho <- readDiscreteCharacterData("data/morpho_clean.nex")
+
+# some quantities that we may like to use later
+nTaxa <- taxa.size()
+nBranches <- 2 * nTaxa - 3
+
+# add missing data
+nuclear.addMissingTaxa(taxa)
+morpho.addMissingTaxa(taxa)
+
+# set up moves and monitor vectors
+moves = VectorMoves()
+monitors = VectorMonitors()
+
+###
+# set up the fossilized-birth-death model
+
+# birth and death rate priors
+# mean taken from literature
+birth ~ dnExponential(1 / 0.225)
+death ~ dnExponential(1 / 0.120)
+
+# moves - multiple tuning parameters to improve mixing
+moves.append( mvScale(birth, lambda = 0.01, weight = 0.5) )
+moves.append( mvScale(birth, lambda = 0.1, weight = 0.5) )
+moves.append( mvScale(birth, lambda = 1, weight = 0.5) )
+
+moves.append( mvScale(death, lambda = 0.01, weight = 0.5) )
+moves.append( mvScale(death, lambda = 0.1, weight = 0.5) )
+moves.append( mvScale(death, lambda = 1, weight = 0.5) )
+
+# interesting quantities to keep track of as well
+diversification := birth - death
+turnover := death / birth
+
+# probability of sampling extant lineages, we have 10/38
+rho <- 10 / 38
+# this includes recently extinct (< 1000y) as extant, to be clear
+
+# fossil sampling rate - prior from my previous analysis
+psi ~ dnExponential(1 / 0.79)
+
+# moves
+moves.append( mvScale(psi, lambda = 0.01, weight = 0.5) )
+moves.append( mvScale(psi, lambda = 0.1, weight = 0.5) )
+moves.append( mvScale(psi, lambda = 1, weight = 0.5) )
+
+# origin time (root)
+root_time ~ dnUniform(6, 30)
+# a generous range between slightly older than the
+# min age of the oldest fossil to slightly younger
+# than all of caninae
+
+# moves
+moves.append( mvSlide(root_time, delta = 0.01, weight = 2.5) )
+moves.append( mvSlide(root_time, delta = 0.1, weight = 2.5) )
+moves.append( mvSlide(root_time, delta = 1, weight = 2.5) )
+
+# set up final fbd tree
+fbd_tree ~ dnFBDP(origin = root_time, lambda = birth, mu = death,
+                  psi = psi, rho = rho, taxa = taxa)
+
+# moves on topology and node ages
+moves.append( mvFNPR(fbd_tree, weight = 7.5) )
+moves.append( mvCollapseExpandFossilBranch(fbd_tree, root_time, weight = 3) )
+moves.append( mvNodeTimeSlideUniform(fbd_tree, weight = 20) )
+moves.append( mvRootTimeSlideUniform(fbd_tree, root_time, weight = 2.5) )
+
+# extinct taxa
+extinct = v("Canis_mosbachensis", "Canis_armbrusteri", "Canis_variabilis",
+            "Canis_falconeri", "Canis_etruscus", "Canis_arnensis", "Canis_lepophagus",
+            "Canis_edwardii", "Urocyon_minicephalus", "Canis_chihliensis",
+            "Canis_thooides", "Canis_ferox", "Urocyon_webbi")
+
+# can also pay attention at the molecular tree
+extant_tree := fnPruneTree(fbd_tree, extinct)
+
+# we should keep track of the tmrca for the two clades we're trying to compare
+wlc_no_dirus = clade("Canis_lupus", "Canis_latrans", "Canis_simensis", "Canis_aureus",
+                     "Cuon_alpinus", "Lycaon_pictus", "Canis_mesomelas", "Canis_adustus")
+wlc_no_jackals = clade("Canis_lupus", "Canis_latrans", "Canis_simensis", "Canis_aureus",
+                       "Cuon_alpinus", "Lycaon_pictus", "Canis_dirus")
+
+# divergence times we want to log
+divtime_dirus := tmrca(fbd_tree, wlc_no_jackals)
+divtime_jackals := tmrca(fbd_tree, wlc_no_dirus)
+
+# now we need to create nodes to represent the likelihood for the fossil ages
+
+# fossil occurrences
+fossils = fbd_tree.getFossils()
+
+# for each fossil
+for (i in 1:fossils.size()) {
+  # get time of the node
+  t[i] := tmrca(fbd_tree, clade(fossils[i]))
+
+  # and the minimum and maximum age of the fossil
+  a_i = fossils[i].getMinAge()
+  b_i = fossils[i].getMaxAge()
+
+  # and create the likelihood as a uniform of t[i] between those clamped (observed) at 0
+  F[i] ~ dnUniform(t[i] - b_i, t[i] - a_i)
+  F[i].clamp(0)
+}
+
+# moves
+moves.append( mvFossilTimeSlideUniform(fbd_tree, root_time, weight = 2.5) )
+
+###
+# molecular evolution model
+# from model averaging, we found that a simple GTR model is the best
+
+# base frequencies
+pi ~ dnDirichlet( v(1, 1, 1, 1) )
+
+# moves
+moves.append( mvBetaSimplex(pi, alpha = 10, weight = 1.25) )
+moves.append( mvSimplexElementScale(pi, alpha = 10, weight = 2.5) )
+
+# exchangeability rates - transversions
+er_transv ~ dnDirichlet( v(1, 1, 1, 1) )
+
+# moves
+moves.append( mvBetaSimplex(er_transv, alpha = 10, weight = 1.25) )
+moves.append( mvSimplexElementScale(er_transv, alpha = 10, weight = 2.5) )
+
+# create actual er vectors with transition rates 0
+er := Simplex( v(er_transv[1], 0, er_transv[2], er_transv[3], 0, er_transv[4]) )
+
+# create nuclear matrix
+Q_nuclear := fnGTR(er, pi)
+
+# branch rates - strict molecular clock since I did not do averaging on this
+clock_nuclear ~ dnExponential(1)
+
+# moves
+moves.append( mvScale(clock_nuclear, lambda = 0.01, weight = 2) )
+moves.append( mvScale(clock_nuclear, lambda = 0.1, weight = 2) )
+moves.append( mvScale(clock_nuclear, lambda = 1, weight = 2) )
+
+# phylogenetic CTMC for the nuclear data
+phy_seq ~ dnPhyloCTMC(tree = fbd_tree, Q = Q_nuclear, branchRates = clock_nuclear, type = "DNA")
+
+# clamp it to nuclear data
+phy_seq.clamp(nuclear)
+
+###
+# morphological character evolution model
+# from model averaging, the best model was GTR
+
+# restrict morpho to characters with maximum state 1
+morpho.setNumStatesPartition(2)
+
+# number of sites
+n_sites = morpho.nchar()
+
+# clock - also strict morphological clock since I did no averaging
+clock_morpho ~ dnExponential(1)
+
+# moves
+moves.append( mvScale(clock_morpho, lambda = 0.01, weight = 2) )
+moves.append( mvScale(clock_morpho, lambda = 0.1, weight = 2) )
+moves.append( mvScale(clock_morpho, lambda = 1, weight = 2) )
+
+# set prior from discrete morphology tutorial
+pi_scale ~ dnLognormal( 0.0, sd = 2 * 0.587405 )
+
+# moves
+moves.append( mvScale(pi_scale, lambda = 0.01, weight = 2) )
+moves.append( mvScale(pi_scale, lambda = 0.1, weight = 2) )
+moves.append( mvScale(pi_scale, lambda = 1, weight = 2) )
+
+# set up Q
+Q := fnF81(Simplex(fnDiscretizeBeta(pi_scale, pi_scale, 2)))
+    
+morpho_seq ~ dnPhyloCTMC(tree = fbd_tree, Q = Q, nSites = n_sites, 
+                         branchRates = clock_morpho, type = "Standard")
+
+###
+# set up final model and run MCMC
+
+# create model object
+mymodel = model(fbd_tree)
+
+# model monitor - all numerical parameters
+monitors.append( mnModel(filename = "output_combined_clean/combined_evidence_fbd_clean.log", printgen = 100) )
+
+# tree monitor - just the tree
+monitors.append( mnFile(filename = "output_combined_clean/combined_evidence_fbd_clean.trees", printgen = 100, fbd_tree) )  
+
+# tree monitor for the extant tree
+monitors.append( mnFile(filename = "output_combined_clean/combined_evidence_fbd_clean_extant.trees", printgen = 100, extant_tree) )
+
+# to the screen 
+monitors.append( mnScreen(printgen = 100, root_time, divtime_dirus, divtime_jackals) ) 
+
+# create the mcmc object
+mymcmc = mcmc(mymodel, monitors, moves, nruns = 2, combine = "mixed")
+
+# and run it
+mymcmc.run(generations = 100000, tuningInterval = 200, checkpointInterval = 1000, checkpointFile = "output_combined_clean/combined_evidence_fbd_clean.state")
+
+# quit
+q()

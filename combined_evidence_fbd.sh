@@ -6,11 +6,11 @@
 
 #SBATCH --time=2-01:00:00
 
-#SBATCH --output=output_combined/job.%J.out
+#SBATCH --output=output_combined_clean/job.%J.out
 
-#SBATCH --error=output_combined/job.%J.err
+#SBATCH --error=output_combined_clean/job.%J.err
 
-#SBATCH --job-name="combined_evidence"
+#SBATCH --job-name="combined_evidence_clean"
 
 #SBATCH --mail-user=petrucci@iastate.edu
 #SBATCH --mail-type=BEGIN
@@ -22,4 +22,4 @@ module load gcc/7.3.0-xegsmw4
 module load boost/1.73.0-hm3w2fl
 
 cd /home/petrucci/canid_tree
-/home/petrucci/revbayes/projects/cmake/rb scripts/combined_evidence_fbd.Rev
+/home/petrucci/revbayes/projects/cmake/rb scripts/combined_evidence_fbd_clean.Rev
