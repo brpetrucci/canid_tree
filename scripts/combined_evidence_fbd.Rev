@@ -211,7 +211,7 @@ monitors.append( mnFile(filename = "output_combined/combined_evidence_fbd.trees"
 monitors.append( mnScreen(printgen = 100, root_time, clock_nuclear, clock_morpho) ) 
 
 # create the mcmc object
-mymcmc = mcmc(mymodel, monitors, moves, nruns = 2, combined = "mixed")
+mymcmc = mcmc(mymodel, monitors, moves, nruns = 2, combine = "mixed")
 
 # and run it
 mymcmc.run(generations = 100000, tuningInterval = 200, checkpointInterval = 1000, checkpointFile = "output_combined/combined_evidence_fbd.state")
