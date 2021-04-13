@@ -21,10 +21,5 @@ module load cmake/3.18.1-j52h3yu
 module load gcc/7.3.0-xegsmw4
 module load boost/1.73.0-hm3w2fl
 
-cd /home/petrucci/revbayes/
-git pull
-cd projects/cmake/
-./build.sh
-
 cd /home/petrucci/canid_tree
-../revbayes/projects/cmake/rb scripts/avg_morpho_MCMC.Rev
+/home/petrucci/revbayes/projects/cmake/rb scripts/avg_morpho_MCMC.Rev
