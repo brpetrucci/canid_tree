@@ -115,14 +115,14 @@ moves.append( mvFossilTimeSlideUniform(fbd_tree, root_time, weight = 2.5) )
 pi ~ dnDirichlet(1, 1, 1, 1)
 
 # moves
-moves.append( mvBetaSimplex(pi, alpha = 10, weight = 1.25) )
+	moves.append( mvBetaSimplex(pi, alpha = 10, weight = 1.25) )
 moves.append( mvSimplexElementScale(pi, alpha = 10, weight = 2.5) )
 
 # exchangeability rates - transversions
 er_trasnv ~ dnDirichlet(1, 1, 1, 1)
 
 # moves
-moves.append( mvBetaSimplex(er_transv, alpha = 10, weight = 1.25) )
+	moves.append( mvBetaSimplex(er_transv, alpha = 10, weight = 1.25) )
 moves.append( mvSimplexElementScale(er_transv, alpha = 10, weight = 2.5) )
 
 # create actual er vectors with transition rates 0
@@ -135,12 +135,12 @@ Q_nuclear := fnGTR(er, pi)
 clock_nuclear ~ dnExponential(1)
 
 # moves
-moves.append( mvScale(clock_nuclear, lambda = 0.01, weight = 2) )
-moves.append( mvScale(clock_nuclear, lambda = 0.1, weight = 2) )
+	moves.append( mvScale(clock_nuclear, lambda = 0.01, weight = 2) )
+	moves.append( mvScale(clock_nuclear, lambda = 0.1, weight = 2) )
 moves.append( mvScale(clock_nuclear, lambda = 1, weight = 2) )
 
 # phylogenetic CTMC for the nuclear data
-phy_seq ~ dnPhyloCTMC(tree = fbd_tree, Q = Q_nuclear, branchRates = clock_nuclear, type = "DNA")
+	phy_seq ~ dnPhyloCTMC(tree = fbd_tree, Q = Q_nuclear, branchRates = clock_nuclear, type = "DNA")
 
 # clamp it to nuclear data
 phy_seq.clamp(nuclear)
@@ -150,34 +150,55 @@ phy_seq.clamp(nuclear)
 # from model averaging, the best model was .....
 
 # max number of states
-n_states <- 4
+	n_states <- 4
 
 # start the vector of morpho restricted to a state sample size
-morpho_bystate[1] <- morpho
+	morpho_bystate[1] <- morpho
 
 # for each number of states from 2 to n_states
-for (i in 2:n_states) {
-  # copy morpho
-  morpho_bystate[i] <- morpho
+	for (i in 2:n_states) {
+# copy morpho
+		morpho_bystate[i] <- morpho
 
-  # restrict it to characters with maximum state i
-  morpho_bystate[i].setNumStatesPartition(i)
+# restrict it to characters with maximum state i
+			morpho_bystate[i].setNumStatesPartition(i)
 
-  # number of sites
-  n_sites = morpho_bystate[i].nchar()
+# number of sites
+			n_sites = morpho_bystate[i].nchar()
 
-  # clock - also strict morphological clock since I did no averaging
-  clock_morpho[i - 1] ~ dnExponential(1)
+# clock - also strict morphological clock since I did no averaging
+			clock_morpho[i - 1] ~ dnExponential(1)
 
-  # moves
-  moves.append( mvScale(clock_morpho[i - 1], lambda = 0.01, weight = 2) )
-  moves.append( mvScale(clock_morpho[i - 1], lambda = 0.1, weight = 2) )
-  moves.append( mvScale(clock_morpho[i - 1], lambda = 1, weight = 2) )
+# moves
+			moves.append( mvScale(clock_morpho[i - 1], lambda = 0.01, weight = 2) )
+			moves.append( mvScale(clock_morpho[i - 1], lambda = 0.1, weight = 2) )
+			moves.append( mvScale(clock_morpho[i - 1], lambda = 1, weight = 2) )
 
-  ### TO-DO: USE BEST MODELS FROM AVERAGING TO FILL THIS UP
-  Q[i - 1] := ###
-  morpho_seq[i - 1] ~ dnPhyloCTMC(tree = fbd_tree, Q = Q[i - 1], nSites = n_sites, siteRates = , 
-                                  branchRates = clock_morpho[i - 1], siteMatrices = , type = "Standard")
+# if i is 2, the model is a bit more complex
+			if (i == 2) {
+# set prior from discrete morphology tutorial
+				er_scale ~ dnLognormal( 0.0, sd = 2 * 0.587405 )
+					pi_scale ~ dnLognormal( 0.0, sd = 2 * 0.587405 )
+
+# moves
+					moves.append( mvScale(er_scale, lambda = 0.01, weight = 2) )
+					moves.append( mvScale(er_scale, lambda = 0.1, weight = 2) )
+					moves.append( mvScale(er_scale, lambda = 1, weight = 2) )
+
+					moves.append( mvScale(pi_scale, lambda = 0.01, weight = 2) )
+					moves.append( mvScale(pi_scale, lambda = 0.1, weight = 2) )
+					moves.append( mvScale(pi_scale, lambda = 1, weight = 2) )
+
+# set up Q
+					Q[i - 1] := fnGTR( Simplex(fnDiscretizeBeta(er_scale, er_scale, sum(1:(i - 1)))),
+							Simplex(fnDiscretizeBeta(pi_scale, pi_scale, i)) )
+			} else {
+# if i is 3 or 4, just JC
+				Q[i - 1] <- fnJC(i)
+			}
+
+  morpho_seq[i - 1] ~ dnPhyloCTMC(tree = fbd_tree, Q = Q[i - 1], nSites = n_sites, 
+                                  branchRates = clock_morpho[i - 1], type = "Standard")
 }
 
 ###
