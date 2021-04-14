@@ -153,9 +153,9 @@ Q_nuclear := fnGTR(er, pi)
 clock_nuclear ~ dnExponential(1)
 
 # moves
-moves.append( mvScale(clock_nuclear, lambda = 0.01, weight = 2) )
-moves.append( mvScale(clock_nuclear, lambda = 0.1, weight = 2) )
-moves.append( mvScale(clock_nuclear, lambda = 1, weight = 2) )
+moves.append( mvScale(clock_nuclear, lambda = 0.01, weight = 3) )
+moves.append( mvScale(clock_nuclear, lambda = 0.1, weight = 3) )
+moves.append( mvScale(clock_nuclear, lambda = 1, weight = 3) )
 
 # phylogenetic CTMC for the nuclear data
 phy_seq ~ dnPhyloCTMC(tree = fbd_tree, Q = Q_nuclear, branchRates = clock_nuclear, type = "DNA")
@@ -202,22 +202,22 @@ morpho_seq ~ dnPhyloCTMC(tree = fbd_tree, Q = Q, nSites = n_sites,
 mymodel = model(fbd_tree)
 
 # model monitor - all numerical parameters
-monitors.append( mnModel(filename = "output_combined_clean/combined_evidence_fbd_clean.log", printgen = 100) )
+monitors.append( mnModel(filename = "output_combined_clean/combined_evidence_fbd_clean.log", printgen = 10) )
 
 # tree monitor - just the tree
-monitors.append( mnFile(filename = "output_combined_clean/combined_evidence_fbd_clean.trees", printgen = 100, fbd_tree) )  
+monitors.append( mnFile(filename = "output_combined_clean/combined_evidence_fbd_clean.trees", printgen = 10, fbd_tree) )  
 
 # tree monitor for the extant tree
-monitors.append( mnFile(filename = "output_combined_clean/combined_evidence_fbd_clean_extant.trees", printgen = 100, extant_tree) )
+monitors.append( mnFile(filename = "output_combined_clean/combined_evidence_fbd_clean_extant.trees", printgen = 10, extant_tree) )
 
 # to the screen 
-monitors.append( mnScreen(printgen = 100, root_time, divtime_dirus, divtime_jackals) ) 
+monitors.append( mnScreen(printgen = 1000, root_time, divtime_dirus, divtime_jackals) ) 
 
 # create the mcmc object
 mymcmc = mcmc(mymodel, monitors, moves, nruns = 2, combine = "mixed")
 
 # and run it
-mymcmc.run(generations = 100000, tuningInterval = 200, checkpointInterval = 1000, checkpointFile = "output_combined_clean/combined_evidence_fbd_clean.state")
+mymcmc.run(generations = 150000, tuningInterval = 200, checkpointInterval = 100, checkpointFile = "output_combined_clean/combined_evidence_fbd_clean.state")
 
 # quit
 q()
