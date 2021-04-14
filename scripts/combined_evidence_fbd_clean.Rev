@@ -20,7 +20,7 @@ morpho <- readDiscreteCharacterData("data/morpho_clean.nex")
 
 # some quantities that we may like to use later
 nTaxa <- taxa.size()
-nBranches <- 2 * nTaxa - 3
+n_branches <- 2 * nTaxa - 2
 
 # add missing data
 nuclear.addMissingTaxa(taxa)
@@ -70,19 +70,21 @@ root_time ~ dnUniform(6, 30)
 # than all of caninae
 
 # moves
-moves.append( mvSlide(root_time, delta = 0.01, weight = 2.5) )
-moves.append( mvSlide(root_time, delta = 0.1, weight = 2.5) )
-moves.append( mvSlide(root_time, delta = 1, weight = 2.5) )
+moves.append( mvSlide(root_time, delta = 0.01, weight = 2) )
+moves.append( mvSlide(root_time, delta = 0.1, weight = 2) )
+moves.append( mvSlide(root_time, delta = 1, weight = 2) )
 
 # set up final fbd tree
 fbd_tree ~ dnFBDP(origin = root_time, lambda = birth, mu = death,
                   psi = psi, rho = rho, taxa = taxa)
 
 # moves on topology and node ages
-moves.append( mvFNPR(fbd_tree, weight = 7.5) )
+moves.append( mvFNPR(fbd_tree, weight = 15) )
+moves.append( mvNNI(fbd_tree, weight = nTaxa / 3) )
+moves.append( mvGPR(fbd_tree, weight = nTaxa / 5) )
 moves.append( mvCollapseExpandFossilBranch(fbd_tree, root_time, weight = 3) )
 moves.append( mvNodeTimeSlideUniform(fbd_tree, weight = 20) )
-moves.append( mvRootTimeSlideUniform(fbd_tree, root_time, weight = 2.5) )
+moves.append( mvRootTimeSlideUniform(fbd_tree, root_time, weight = 2) )
 
 # extinct taxa
 extinct = v("Canis_mosbachensis", "Canis_armbrusteri", "Canis_variabilis",
@@ -123,7 +125,7 @@ for (i in 1:fossils.size()) {
 }
 
 # moves
-moves.append( mvFossilTimeSlideUniform(fbd_tree, root_time, weight = 2.5) )
+moves.append( mvFossilTimeSlideUniform(fbd_tree, root_time, weight = 2) )
 
 ###
 # molecular evolution model
@@ -133,15 +135,15 @@ moves.append( mvFossilTimeSlideUniform(fbd_tree, root_time, weight = 2.5) )
 pi ~ dnDirichlet( v(1, 1, 1, 1) )
 
 # moves
-moves.append( mvBetaSimplex(pi, alpha = 10, weight = 1.25) )
-moves.append( mvSimplexElementScale(pi, alpha = 10, weight = 2.5) )
+moves.append( mvBetaSimplex(pi, alpha = 10, weight = 1) )
+moves.append( mvSimplexElementScale(pi, alpha = 10, weight = 2) )
 
 # exchangeability rates - transversions
 er_transv ~ dnDirichlet( v(1, 1, 1, 1) )
 
 # moves
-moves.append( mvBetaSimplex(er_transv, alpha = 10, weight = 1.25) )
-moves.append( mvSimplexElementScale(er_transv, alpha = 10, weight = 2.5) )
+moves.append( mvBetaSimplex(er_transv, alpha = 10, weight = 1) )
+moves.append( mvSimplexElementScale(er_transv, alpha = 10, weight = 2) )
 
 # create actual er vectors with transition rates 0
 er := Simplex( v(er_transv[1], 0, er_transv[2], er_transv[3], 0, er_transv[4]) )
@@ -149,13 +151,21 @@ er := Simplex( v(er_transv[1], 0, er_transv[2], er_transv[3], 0, er_transv[4]) )
 # create nuclear matrix
 Q_nuclear := fnGTR(er, pi)
 
-# branch rates - strict molecular clock since I did not do averaging on this
-clock_nuclear ~ dnExponential(1)
+# molecular clock mean
+clock_nuclear_mean ~ dnExponential(10.0)
 
 # moves
-moves.append( mvScale(clock_nuclear, lambda = 0.01, weight = 3) )
-moves.append( mvScale(clock_nuclear, lambda = 0.1, weight = 3) )
-moves.append( mvScale(clock_nuclear, lambda = 1, weight = 3) )
+moves.append( mvScale(clock_nuclear_mean, lambda = 0.01, weight = 1.0) )
+moves.append( mvScale(clock_nuclear_mean, lambda = 0.1,  weight = 1.0) )
+moves.append( mvScale(clock_nuclear_mean, lambda = 1.0,  weight = 1.0) )
+
+# set up clocks for each branch
+for (i in 1:n_branches) {
+  clock_nuclear[i] ~ dnExp(1 / clock_nuclear_mean)
+  moves.append( mvScale(clock_nuclear[i], lambda = 1.0,  weight = 1.0) )
+  moves.append( mvScale(clock_nuclear[i], lambda = 0.1,  weight = 1.0) )
+  moves.append( mvScale(clock_nuclear[i], lambda = 0.01, weight = 1.0) )
+}
 
 # phylogenetic CTMC for the nuclear data
 phy_seq ~ dnPhyloCTMC(tree = fbd_tree, Q = Q_nuclear, branchRates = clock_nuclear, type = "DNA")
@@ -173,13 +183,21 @@ morpho.setNumStatesPartition(2)
 # number of sites
 n_sites = morpho.nchar()
 
-# clock - also strict morphological clock since I did no averaging
-clock_morpho ~ dnExponential(1)
+# molecular clock mean
+clock_morpho_mean ~ dnExponential(10.0)
 
 # moves
-moves.append( mvScale(clock_morpho, lambda = 0.01, weight = 2) )
-moves.append( mvScale(clock_morpho, lambda = 0.1, weight = 2) )
-moves.append( mvScale(clock_morpho, lambda = 1, weight = 2) )
+moves.append( mvScale(clock_morpho_mean, lambda = 0.01, weight = 1.0) )
+moves.append( mvScale(clock_morpho_mean, lambda = 0.1,  weight = 1.0) )
+moves.append( mvScale(clock_morpho_mean, lambda = 1.0,  weight = 1.0) )
+
+# set up clocks for each branch
+for (i in 1:n_branches) {
+  clock_morpho[i] ~ dnExp(1 / clock_morpho_mean)
+  moves.append( mvScale(clock_morpho[i], lambda = 1.0,  weight = 1.0) )
+  moves.append( mvScale(clock_morpho[i], lambda = 0.1,  weight = 1.0) )
+  moves.append( mvScale(clock_morpho[i], lambda = 0.01, weight = 1.0) )
+}
 
 # set prior from discrete morphology tutorial
 pi_scale ~ dnLognormal( 0.0, sd = 2 * 0.587405 )
@@ -194,6 +212,7 @@ Q := fnF81(Simplex(fnDiscretizeBeta(pi_scale, pi_scale, 2)))
     
 morpho_seq ~ dnPhyloCTMC(tree = fbd_tree, Q = Q, nSites = n_sites, 
                          branchRates = clock_morpho, type = "Standard")
+morpho_seq.clamp(morpho)
 
 ###
 # set up final model and run MCMC
@@ -217,7 +236,7 @@ monitors.append( mnScreen(printgen = 1000, root_time, divtime_dirus, divtime_jac
 mymcmc = mcmc(mymodel, monitors, moves, nruns = 2, combine = "mixed")
 
 # and run it
-mymcmc.run(generations = 150000, tuningInterval = 200, checkpointInterval = 100, checkpointFile = "output_combined_clean/combined_evidence_fbd_clean.state")
+mymcmc.run(generations = 50000, tuningInterval = 200, checkpointInterval = 100, checkpointFile = "output_combined_clean/combined_evidence_fbd_clean.state")
 
 # quit
 q()

@@ -1,0 +1,103 @@
+###############################@##
+## Nuclear DNA data only model  ##
+##    EEOB 563 final project    ##
+#   Bruno do Rosario Petrucci   ##
+##########################################
+
+###
+# set up basic objects for the analysis
+
+# read nuclear DNA data
+nuclear <- readDiscreteCharacterData("data/nuclear.nex")
+
+# some quantities that we may like to use later
+nTaxa <- nuclear.ntaxa()
+n_branches <- 2 * nTaxa - 2
+taxa <- nuclear.taxa()
+
+# set up moves and monitor vectors
+moves = VectorMoves()
+monitors = VectorMonitors()
+
+###
+# set up tree model
+
+# root age
+root_time ~ dnUniform(5, 30)
+moves.append( mvSlide(root_time, delta = 0.01, weight = 3) )
+moves.append( mvSlide(root_time, delta = 0.1, weight = 3) )
+moves.append( mvSlide(root_time, delta = 1, weight = 3) ) 
+
+# time tree prior and moves on topology and branch lengths
+phy ~ dnUniformTimeTree(rootAge = root_time, taxa = taxa)
+moves.append( mvNarrow(phy, weight = nTaxa) )
+moves.append( mvNNI(phy, weight = nTaxa / 4.0) )
+moves.append( mvFNPR(phy, weight = nTaxa / 4.0) )
+moves.append( mvGPR(phy, weight = nTaxa / 4.0) )
+moves.append( mvSubtreeScale(phy, weight = nTaxa / 2.0) )
+moves.append( mvNodeTimeSlideUniform(phy, weight = nTaxa) )
+
+# we should keep track of the tmrca for the two clades we're trying to compare
+wlc_no_dirus = clade("Canis_lupus", "Canis_latrans", "Canis_simensis", "Canis_aureus",
+                     "Cuon_alpinus", "Lycaon_pictus", "Canis_mesomelas", "Canis_adustus")
+wlc_no_jackals = clade("Canis_lupus", "Canis_latrans", "Canis_simensis", "Canis_aureus",
+                       "Cuon_alpinus", "Lycaon_pictus", "Canis_dirus")
+
+# divergence times we want to log
+divtime_dirus := tmrca(phy, wlc_no_jackals)
+divtime_jackals := tmrca(phy, wlc_no_dirus)
+
+### 
+# set up substitution model
+
+# pi - base frequencies
+pi ~ dnDirichlet( v(1, 1, 1, 1) )
+moves.append( mvBetaSimplex(pi, weight = 5) )
+moves.append( mvDirichletSimplex(pi, weight = 2.5) )
+
+# exchangeability rates for GTR transversions
+er_trans ~ dnDirichlet( v(1, 1, 1, 1) )
+moves.append( mvBetaSimplex(er_trans, weight = 5) )
+moves.append( mvDirichletSimplex(er_trans, weight = 2.5) )
+
+# exchangeability rates - need to do this since the data set is
+# transversions only
+er := Simplex(v(er_trans[1], 0, er_trans[2], er_trans[3], 0, er_trans[4]))
+
+Q := fnGTR(er, pi)
+
+# molecular clock mean
+clock_mean ~ dnExponential(10.0)
+
+# moves
+moves.append( mvScale(clock_mean, lambda = 0.01, weight = 1.0) )
+moves.append( mvScale(clock_mean, lambda = 0.1,  weight = 1.0) )
+moves.append( mvScale(clock_mean, lambda = 1.0,  weight = 1.0) )
+
+# set up clocks for each branch
+for (i in 1:n_branches) {
+    clock[i] ~ dnExp(1 / clock_mean)
+    moves.append( mvScale(clock[i], lambda = 1.0,  weight = 1.0) )
+    moves.append( mvScale(clock[i], lambda = 0.1,  weight = 1.0) )
+    moves.append( mvScale(clock[i], lambda = 0.01, weight = 1.0) )
+}
+
+# finally define the CTMC model
+seq ~ dnPhyloCTMC(tree = phy, Q = Q, branchRates = clock, type = "DNA")
+seq.clamp(nuclear)
+
+# make the model object
+mymodel = model(phy)
+
+###
+# set up monitors and run
+
+# monitors
+monitors.append( mnModel(filename = "output_nuclear/nuclear.log", printgen = 10, separator = TAB) )
+monitors.append( mnFile(filename = "output_nuclear/nuclear.trees", printgen = 10, phy) )
+monitors.append( mnScreen(printgen = 1000, root_time, divtime_dirus, divtime_jackals) )
+# to the screen we will just worry about the indicators
+
+# run MCMC
+mymcmc = mcmc(mymodel, moves, monitors, nruns = 2, combine = "mixed")
+mymcmc.run(generations = 100000, tuningInterval = 200, checkpointInterval = 100, checkpointFile = "output_nuclear/nuclear.state")

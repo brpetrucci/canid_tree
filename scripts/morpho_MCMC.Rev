@@ -1,0 +1,110 @@
+######################################
+## Morphological data only analysis ##
+##      EEOB 563 final project      ##
+##    Bruno do Rosario Petrucci     ##
+######################################
+
+###
+# set up basic objects for the analysis
+
+# morphological data
+morpho <- readDiscreteCharacterData("data/extant_morpho.nex")
+
+# some quantities that we may like to use later
+nTaxa <- morpho.ntaxa()
+n_branches <- 2 * nTaxa - 2
+taxa <- morpho.taxa()
+
+# set up moves and monitor vectors
+moves = VectorMoves()
+monitors = VectorMonitors()
+
+###
+# root age
+root_time ~ dnUniform(5, 30)
+moves.append( mvSlide(root_time, delta = 0.01, weight = 3) )
+moves.append( mvSlide(root_time, delta = 0.1, weight = 3) )
+moves.append( mvSlide(root_time, delta = 1, weight = 3) )
+
+# time tree prior and moves on topology and branch lengths
+phy ~ dnUniformTimeTree(rootAge = root_time, taxa = taxa)
+moves.append( mvNarrow(phy, weight = nTaxa) )
+moves.append( mvNNI(phy, weight = nTaxa / 5.0) )
+moves.append( mvFNPR(phy, weight = nTaxa / 5.0) )
+moves.append( mvGPR(phy, weight = nTaxa/30.0) )
+moves.append( mvSubtreeScale(phy, weight = nTaxa / 3.0) )
+moves.append( mvNodeTimeSlideUniform(phy, weight = nTaxa) )
+
+# we should keep track of the tmrca for the two clades we're trying to compare
+wlc_no_dirus = clade("Canis_lupus", "Canis_latrans", "Canis_simensis", "Canis_aureus",
+                     "Cuon_alpinus", "Lycaon_pictus", "Canis_mesomelas", "Canis_adustus")
+wlc_no_jackals = clade("Canis_lupus", "Canis_latrans", "Canis_simensis", "Canis_aureus",
+                       "Cuon_alpinus", "Lycaon_pictus", "Canis_dirus")
+
+# divergence times we want to log
+divtime_dirus := tmrca(phy, wlc_no_jackals)
+divtime_jackals := tmrca(phy, wlc_no_dirus)
+
+###
+# morphological character evolution model
+
+# restrict morpho to characters with maximum state 1
+morpho.setNumStatesPartition(2)
+
+# number of sites
+n_sites = morpho.nchar()
+
+# morphological clock mean
+clock_mean ~ dnExponential(10.0)
+
+# moves
+moves.append( mvScale(clock_mean, lambda = 0.01, weight = 1.0) )
+moves.append( mvScale(clock_mean, lambda = 0.1,  weight = 1.0) )
+moves.append( mvScale(clock_mean, lambda = 1.0,  weight = 1.0) )
+
+# set up clocks for each branch
+for (i in 1:n_branches) {
+    clock[i] ~ dnExp(1 / clock_mean)
+    moves.append( mvScale(clock[i], lambda = 1.0,  weight = 1.0) )
+    moves.append( mvScale(clock[i], lambda = 0.1,  weight = 1.0) )
+    moves.append( mvScale(clock[i], lambda = 0.01, weight = 1.0) )
+}
+
+# set prior from discrete morphology tutorial
+pi_scale ~ dnLognormal( 0.0, sd = 2 * 0.587405 )
+
+# moves
+moves.append( mvScale(pi_scale, lambda = 0.01, weight = 2) )
+moves.append( mvScale(pi_scale, lambda = 0.1, weight = 2) )
+moves.append( mvScale(pi_scale, lambda = 1, weight = 2) )
+
+# set up Q
+Q := fnF81(Simplex(fnDiscretizeBeta(pi_scale, pi_scale, 2)))
+    
+morpho_seq ~ dnPhyloCTMC(tree = phy, Q = Q, nSites = n_sites, 
+                         branchRates = clock, type = "Standard")
+morpho_seq.clamp(morpho)
+
+###
+# set up final model and run MCMC
+
+# create model object
+mymodel = model(phy)
+
+# model monitor - all numerical parameters
+monitors.append( mnModel(filename = "output_morpho/morpho.log", printgen = 10) )
+
+# tree monitor - just the tree
+monitors.append( mnFile(filename = "output_morpho/morpho.trees", printgen = 10, phy) )  
+
+# to the screen 
+monitors.append( mnScreen(printgen = 1000, root_time, divtime_dirus, divtime_jackals) ) 
+
+# create the mcmc object
+mymcmc = mcmc(mymodel, monitors, moves, nruns = 2, combine = "mixed")
+
+# and run it
+mymcmc.run(generations = 10000000, tuningInterval = 200, checkpointInterval = 100, checkpointFile = "output_morpho/morpho.state")
+
+# quit
+q()
