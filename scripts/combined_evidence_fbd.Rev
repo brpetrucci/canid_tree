@@ -71,9 +71,9 @@ root_time ~ dnUniform(6, 30)
 # than all of caninae
 
 # moves
-moves.append( mvSlide(root_time, delta = 0.01, weight = 2.5) )
-moves.append( mvSlide(root_time, delta = 0.1, weight = 2.5) )
-moves.append( mvSlide(root_time, delta = 1, weight = 2.5) )
+moves.append( mvSlide(root_time, delta = 0.01, weight = 2) )
+moves.append( mvSlide(root_time, delta = 0.1, weight = 2) )
+moves.append( mvSlide(root_time, delta = 1, weight = 2) )
 
 # set up final fbd tree
 fbd_tree ~ dnFBDP(origin = root_time, lambda = birth, mu = death,
@@ -83,7 +83,7 @@ fbd_tree ~ dnFBDP(origin = root_time, lambda = birth, mu = death,
 moves.append( mvFNPR(fbd_tree, weight = 7.5) )
 moves.append( mvCollapseExpandFossilBranch(fbd_tree, root_time, weight = 3) )
 moves.append( mvNodeTimeSlideUniform(fbd_tree, weight = 20) )
-moves.append( mvRootTimeSlideUniform(fbd_tree, root_time, weight = 2.5) )
+moves.append( mvRootTimeSlideUniform(fbd_tree, root_time, weight = 2) )
 
 # now we need to create nodes to represent the likelihood for the fossil ages
 
@@ -105,7 +105,7 @@ for (i in 1:fossils.size()) {
 }
 
 # moves
-moves.append( mvFossilTimeSlideUniform(fbd_tree, root_time, weight = 2.5) )
+moves.append( mvFossilTimeSlideUniform(fbd_tree, root_time, weight = 2) )
 
 ###
 # molecular evolution model
@@ -115,15 +115,15 @@ moves.append( mvFossilTimeSlideUniform(fbd_tree, root_time, weight = 2.5) )
 pi ~ dnDirichlet( v(1, 1, 1, 1) )
 
 # moves
-moves.append( mvBetaSimplex(pi, alpha = 10, weight = 1.25) )
-moves.append( mvSimplexElementScale(pi, alpha = 10, weight = 2.5) )
+moves.append( mvBetaSimplex(pi, alpha = 10, weight = 1) )
+moves.append( mvSimplexElementScale(pi, alpha = 10, weight = 2) )
 
 # exchangeability rates - transversions
 er_transv ~ dnDirichlet( v(1, 1, 1, 1) )
 
 # moves
-moves.append( mvBetaSimplex(er_transv, alpha = 10, weight = 1.25) )
-moves.append( mvSimplexElementScale(er_transv, alpha = 10, weight = 2.5) )
+moves.append( mvBetaSimplex(er_transv, alpha = 10, weight = 1) )
+moves.append( mvSimplexElementScale(er_transv, alpha = 10, weight = 2) )
 
 # create actual er vectors with transition rates 0
 er := Simplex( v(er_transv[1], 0, er_transv[2], er_transv[3], 0, er_transv[4]) )
@@ -147,7 +147,7 @@ phy_seq.clamp(nuclear)
 
 ###
 # morphological character evolution model
-# from model averaging, the best model was .....
+# from model averaging, the best model was F81
 
 # max number of states
 n_states <- 4
@@ -214,7 +214,7 @@ monitors.append( mnScreen(printgen = 100, root_time, clock_nuclear, clock_morpho
 mymcmc = mcmc(mymodel, monitors, moves, nruns = 2, combine = "mixed")
 
 # and run it
-mymcmc.run(generations = 100000, tuningInterval = 200, checkpointInterval = 1000, checkpointFile = "output_combined/combined_evidence_fbd.state")
+mymcmc.run(generations = 50000, tuningInterval = 200, checkpointInterval = 1000, checkpointFile = "output_combined/combined_evidence_fbd.state")
 
 # quit
 q()

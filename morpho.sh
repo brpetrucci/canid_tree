@@ -10,7 +10,7 @@
 
 #SBATCH --error=output_morpho/job.%J.err
 
-#SBATCH --job-name="morpho"
+#SBATCH --job-name="morpho" 
 
 #SBATCH --mail-user=petrucci@iastate.edu
 #SBATCH --mail-type=BEGIN
@@ -22,4 +22,4 @@ module load gcc/7.3.0-xegsmw4
 module load boost/1.73.0-hm3w2fl
 
 cd /home/petrucci/canid_tree
-/home/petrucci/revbayes/projects/cmake/rb scripts/morpho_MCMC.Rev
+../revbayes/projects/cmake/rb scripts/morpho_MCMC.Rev
