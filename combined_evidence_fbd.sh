@@ -4,7 +4,7 @@
 
 #SBATCH --cpus-per-task=16
 
-#SBATCH --time=2-01:00:00
+#SBATCH --time=2-12:00:00
 
 #SBATCH --output=output_combined/job.%J.out
 

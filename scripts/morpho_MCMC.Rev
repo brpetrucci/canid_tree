@@ -25,15 +25,15 @@ monitors = VectorMonitors()
 # topology
 top ~ dnUniformTopology(taxa)
 
-moves.append( mvNNI(top, weight = n_taxa) )
-moves.append( mvSPR(top, weight = n_taxa / 2) )
+moves.append( mvNNI(top, weight = n_branches) )
+moves.append( mvSPR(top, weight = n_branches / 3) )
 
 # branch lengths
 for (i in 1:n_branches) {
   br_lens[i] ~ dnExponential(10.0)
-  moves.append( mvScale(br_lens[i], lambda = 0.01, weight = 1) )
-  moves.append( mvScale(br_lens[i], lambda = 0.1, weight = 1) )
-  moves.append( mvScale(br_lens[i], lambda = 1, weight = 1) )
+  moves.append( mvScale(br_lens[i], lambda = 0.01, weight = 5) )
+  moves.append( mvScale(br_lens[i], lambda = 0.1, weight = 5) )
+  moves.append( mvScale(br_lens[i], lambda = 1, weight = 5) ) 
 }
 
 # phylogeny
@@ -70,10 +70,10 @@ morpho_seq.clamp(morpho)
 mymodel = model(phy)
 
 # model monitor - all numerical parameters
-monitors.append( mnModel(filename = "output_morpho/morpho.log", printgen = 10) )
+monitors.append( mnModel(filename = "output_morpho/morpho.log", printgen = 100) )
 
 # tree monitor - just the tree
-monitors.append( mnFile(filename = "output_morpho/morpho.trees", printgen = 10, phy) )  
+monitors.append( mnFile(filename = "output_morpho/morpho.trees", printgen = 100, phy) )  
 
 # to the screen 
 monitors.append( mnScreen(printgen = 1000) ) 
@@ -82,7 +82,7 @@ monitors.append( mnScreen(printgen = 1000) )
 mymcmc = mcmc(mymodel, monitors, moves, nruns = 2, combine = "mixed")
 
 # and run it
-mymcmc.run(generations = 100000, tuningInterval = 200, checkpointInterval = 100, checkpointFile = "output_morpho/morpho.state")
+mymcmc.run(generations = 1500000, tuningInterval = 200, checkpointInterval = 1000, checkpointFile = "output_morpho/morpho.state")
 
 # quit
 q()

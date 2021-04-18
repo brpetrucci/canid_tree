@@ -1,0 +1,18 @@
+
+RevBayes version (1.1.1)
+Build from development (rapture-649-g20534c) on Sun Apr 11 23:30:45 CDT 2021
+
+Visit the website www.RevBayes.com for more information about RevBayes.
+
+RevBayes is free software released under the GPL license, version 3. Type 'license()' for details.
+
+To quit RevBayes type 'quit()' or 'q()'.
+
+
+> source("scripts/combined_evidence_fbd_clean.Rev")
+   Processing file "scripts/combined_evidence_fbd_clean.Rev"
+   Successfully read one character matrix from file 'data/nuclear.nex'
+   Successfully read one character matrix from file 'data/morpho_clean.nex'
+   Error:	Ascertainment bias correction only supported with Standard and Binary/Restriction datatypes
+   Error:	Problem processing line 182 in file "scripts/combined_evidence_fbd_clean.Rev"
+> 
