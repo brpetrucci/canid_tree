@@ -59,20 +59,8 @@ er := Simplex(v(er_trans[1], 0, er_trans[2], er_trans[3], 0, er_trans[4]))
 # rate matrices
 Q := fnGTR(er, pi)
 
-# set alpha, the shape for the gamma variation among sites
-alpha ~ dnUniform(0, 1E8)
-
-# moves
-moves.append( mvScale(alpha, weight = 10.0) )
-
-# indicator, like for Q
-alpha_indicator := ifelse(alpha == 1E8, 0, 1)
-
-# set up site rates with the discretized gamma
-site_rates := fnDiscretizeGamma(alpha, alpha, 4)
-
 # finally define the CTMC model
-seq ~ dnPhyloCTMC(tree = phy, Q = Q, siteRates = site_rates, type = "DNA")
+seq ~ dnPhyloCTMC(tree = phy, Q = Q, type = "DNA")
 seq.clamp(nuclear)
 
 # make the model object
