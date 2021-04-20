@@ -4,13 +4,13 @@
 
 #SBATCH --cpus-per-task=16
 
-#SBATCH --time=2-12:00:00
+#SBATCH --time=3-00:00:00
 
-#SBATCH --output=output_combined/job.%J.out
+#SBATCH --output=output/output_combined2/job.%J.out
 
-#SBATCH --error=output_combined/job.%J.err
+#SBATCH --error=output/output_combined2/job.%J.err
 
-#SBATCH --job-name="combined_evidence"
+#SBATCH --job-name="combined_evidence2"
 
 #SBATCH --mail-user=petrucci@iastate.edu
 #SBATCH --mail-type=BEGIN

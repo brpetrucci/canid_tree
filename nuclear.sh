@@ -4,11 +4,11 @@
 
 #SBATCH --cpus-per-task=16
 
-#SBATCH --time=2-01:00:00
+#SBATCH --time=3-00:00:00
 
-#SBATCH --output=output_nuclear/job.%J.out
+#SBATCH --output=output/output_nuclear/job.%J.out
 
-#SBATCH --error=output_nuclear/job.%J.err
+#SBATCH --error=output/output_nuclear/job.%J.err
 
 #SBATCH --job-name="nuclear" 
 

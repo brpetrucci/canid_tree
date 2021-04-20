@@ -232,7 +232,7 @@ morpho_seq.clamp(morpho)
 mymodel = model(fbd_tree)
 
 # output dir
-output_dir = "output_combined/"
+output_dir = "output/output_combined/"
 
 # model monitor - all numerical parameters
 monitors.append( mnModel(filename = output_dir + "combined.log", printgen = 10) )
@@ -248,6 +248,9 @@ monitors.append( mnScreen(printgen = 1000, root_time, divtime_dirus, divtime_jac
 
 # create the mcmc object
 mymcmc = mcmc(mymodel, monitors, moves, nruns = 2, combine = "mixed")
+
+# from checkpoint
+#mymcmc.initializeFromCheckpoint(checkpointFile = output_dir + "combined.state")
 
 # and run it
 mymcmc.run(generations = 300000, tuningInterval = 200, checkpointInterval = 100, checkpointFile = output_dir + "combined.state")

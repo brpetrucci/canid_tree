@@ -11,7 +11,7 @@
 baseDir <- "/home/petrucci/canid_tree/"
 
 # read nuclear DNA data
-nuclear <- readDiscreteCharacterData(baseDir + "data/nuclear.nex")
+nuclear <- readDiscreteCharacterData(baseDir + "data/nuclear_full.nex")
 
 # some quantities that we may like to use later
 nTaxa <- nuclear.ntaxa()
@@ -27,13 +27,13 @@ monitors = VectorMonitors()
 
 # topology
 top ~ dnUniformTopology(taxa)
-moves.append( mvNNI(top, weight = nTaxa / 2) )
-moves.append( mvSPR(top, weight = nTaxa / 10) )
+moves.append( mvNNI(top, weight = nTaxa / 4) )
+moves.append( mvSPR(top, weight = nTaxa / 20) )
 
 # branch lengths
 for (i in 1:nBranches) {
   br_lens[i] ~ dnExponential(10)
-  moves.append( mvScale(br_lens[i], weight = 1) )
+  moves.append( mvScale(br_lens[i], weight = 0.5) )
 }
 
 # tree length, just to keep track of it
@@ -47,18 +47,18 @@ phy := treeAssembly(top, br_lens)
 
 # kappa - transition/transversion rate
 kappa ~ dnExp(1)
-moves.append( mvScale(kappa, weight = 5) )
+moves.append( mvScale(kappa, weight = 2.5) )
 # this should be 0, but might as well set it to see how it goes
 
 # pi - base frequencies
 pi ~ dnDirichlet( v(1, 1, 1, 1) )
-moves.append( mvBetaSimplex(pi, weight = 5) )
-moves.append( mvDirichletSimplex(pi, weight = 2.5) )
+moves.append( mvBetaSimplex(pi, weight = 2.5) )
+moves.append( mvDirichletSimplex(pi, weight = 1.25) )
 
 # exchangeability rates for GTR transversions
 er_trans ~ dnDirichlet( v(1, 1, 1, 1) )
-moves.append( mvBetaSimplex(er_trans, weight = 5) )
-moves.append( mvDirichletSimplex(er_trans, weight = 2.5) )
+moves.append( mvBetaSimplex(er_trans, weight = 2.5) )
+moves.append( mvDirichletSimplex(er_trans, weight = 1.25) )
 
 # exchangeability rates - need to do this since the data set is
 # transversions only
@@ -77,7 +77,7 @@ Q_vec := v(Q_JC, Q_K80, Q_F81, Q_HKY, Q_GTR)
 # model indicator - which model are we looking into?
 # the posterior probability of this defines our results
 Q_indicator ~ dnCategorical( simplex(1, 1, 1, 1, 1) )
-moves.append( mvRandomGeometricWalk(Q_indicator, weight = 10, tune = FALSE) )
+moves.append( mvRandomGeometricWalk(Q_indicator, weight = 5, tune = FALSE) )
 
 # set Q and sub rates based on Q indicator
 Q := Q_vec[Q_indicator]
@@ -91,8 +91,8 @@ alpha ~ dnReversibleJumpMixture(1E8, dnUniform(0, 1E8), 0.5)
 alpha.setValue(1.0)
 
 # moves
-moves.append( mvRJSwitch(alpha, weight = 10.0) )
-moves.append( mvScale(alpha, weight = 10.0) )
+moves.append( mvRJSwitch(alpha, weight = 5) )
+moves.append( mvScale(alpha, weight = 5) )
 
 # indicator, like for Q
 alpha_indicator := ifelse(alpha == 1E8, 0, 1)
@@ -112,42 +112,44 @@ mymodel = model(phy)
 ###
 # set up monitors and run
 
+# output directory
+output_dir = "output/output_nuclear_avg/"
+
 # monitors
-monitors.append( mnModel(filename = "output_nuclear_avg/nuclear_avg.log", printgen = 10, separator = TAB) )
-monitors.append( mnFile(filename = "output_nuclear_avg/nuclear_avg.trees", printgen = 10, phy) )
+monitors.append( mnModel(filename = output_dir + "nuclear_avg.log", printgen = 10, separator = TAB) )
+monitors.append( mnFile(filename = output_dir + "nuclear_avg.trees", printgen = 10, phy) )
 monitors.append( mnScreen(printgen = 1000, Q_indicator, alpha_indicator) )
 # to the screen we will just worry about the indicators
 
 # run MCMC
 mymcmc = mcmc(mymodel, moves, monitors, nruns = 2, combine = "mixed")
-mymcmc.run(generations = 50000, tuningInterval = 200, checkpointInterval = 100, checkpointFile = "output_nuclear_avg/nuclear_avg.state")
+mymcmc.run(generations = 50000, tuningInterval = 200, checkpointInterval = 100, checkpointFile = output_dir + "nuclear_avg.state")
 
 ###
 # get some analysis in
 
 # this segfaults if you put the outgroup
 # read tree trace
-trace = readTreeTrace("output_nuclear_avg/nuclear_avg.trees", treetype = "non-clock")
-#, outgroup = clade("Urocyon_cinereoargenteus"))
+trace = readTreeTrace(output_dir + "nuclear_avg.trees", treetype = "non-clock")
 
 # write MAP, MCC, and consensus tree to file
-map_tree = mapTree(treeTrace, "output_nuclear_avg/map_tree_navg.tree")
-mcc_tree = mccTree(treeTrace, "output_nuclear_avg/mcc_tree_navg.tree")
-con_tree = consensusTree(treeTrace, "output_nuclear_avg/con_tree_navg.tree")
+map_tree = mapTree(treeTrace, output_dir + "map_tree.tree")
+mcc_tree = mccTree(treeTrace, output_dir + "mcc_tree.tree")
+con_tree = consensusTree(treeTrace, output_dir + "con_tree.tree")
 
 # and write posterior probability of important clades to a file
 canina <- clade("Canis_lupus", "Canis_latrans", "Canis_simensis", 
                 "Canis_aureus", "Cuon_alpinus", "Lycaon_pictus", 
                 "Canis_adustus", "Canis_mesomelas", "Canis_dirus")
 wlc_no_dirus <- clade("Canis_lupus", "Canis_latrans", "Canis_simensis", 
-                "Canis_aureus", "Cuon_alpinus", "Lycaon_pictus", 
-                "Canis_adustus", "Canis_mesomelas")
+                      "Canis_aureus", "Cuon_alpinus", "Lycaon_pictus", 
+                      "Canis_adustus", "Canis_mesomelas")
 wlc_no_jackals <- clade("Canis_lupus", "Canis_latrans", "Canis_simensis", 
-                "Canis_aureus", "Cuon_alpinus", "Lycaon_pictus", "Canis_dirus")
+                        "Canis_aureus", "Cuon_alpinus", "Lycaon_pictus", "Canis_dirus")
 
-write("Posterior probability of Canina: " + treeTrace.cladeProbability(canina) + "; Canina minus dire wolf: " +
-      treeTrace.cladeProbability(wlc_no_dirus) + "; Canina minus jackals: " + treeTrace.cladeProbability(wlc_no_jackals), 
-      filename = "output_nuclear_avg/cladeProbs.txt")
+write("Posterior probability of Canina: " + trace.cladeProbability(canina) + "; Canina minus dire wolf: " +
+      trace.cladeProbability(wlc_no_dirus) + "; Canina minus jackals: " + trace.cladeProbability(wlc_no_jackals), 
+      filename = output_dir + "cladeProbs.txt")
 
 # quit
 q()

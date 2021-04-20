@@ -1,18 +1,18 @@
-##################################
-## Nuclear DNA data only model  ##
-##    EEOB 563 final project    ##
-#   Bruno do Rosario Petrucci   ##
-##################################
+##########################################
+## Tree inference for  nuclear DNA data ##
+##        EEOB 563 final project        ##
+##       Bruno do Rosario Petrucci      ##
+##########################################
 
 ###
 # set up basic objects for the analysis
 
 # read nuclear DNA data
-nuclear <- readDiscreteCharacterData("data/nuclear.nex")
+nuclear <- readDiscreteCharacterData("data/nuclear_full.nex")
 
 # some quantities that we may like to use later
-n_taxa <- nuclear.ntaxa()
-n_branches <- 2 * n_taxa - 3
+nTaxa <- nuclear.ntaxa()
+nBranches <- 2 * nTaxa - 3
 taxa <- nuclear.taxa()
 
 # set up moves and monitor vectors
@@ -23,20 +23,20 @@ monitors = VectorMonitors()
 # set up tree model
 
 # topology
-top ~ dnUniformTopology(taxa, outgroup = clade("Urocyon_cinereoargenteus"))
-
-moves.append( mvNNI(top, weight = n_taxa) )
-moves.append( mvSPR(top, weight = n_taxa / 2) )
+top ~ dnUniformTopology(taxa)
+moves.append( mvNNI(top, weight = nTaxa / 2) )
+moves.append( mvSPR(top, weight = nTaxa / 10) )
 
 # branch lengths
-for (i in 1:n_branches) {
-  br_lens[i] ~ dnExponential(10.0)
-  moves.append( mvScale(br_lens[i], lambda = 0.01, weight = 1) )
-  moves.append( mvScale(br_lens[i], lambda = 0.1, weight = 1) )
-  moves.append( mvScale(br_lens[i], lambda = 1, weight = 1) )
+for (i in 1:nBranches) {
+  br_lens[i] ~ dnExponential(10)
+  moves.append( mvScale(br_lens[i], weight = 1) )
 }
 
-# phylogeny
+# tree length, just to keep track of it
+TL := sum(br_lens)
+
+# combine topology and branch lengths
 phy := treeAssembly(top, br_lens)
 
 ### 
@@ -56,10 +56,23 @@ moves.append( mvDirichletSimplex(er_trans, weight = 2.5) )
 # transversions only
 er := Simplex(v(er_trans[1], 0, er_trans[2], er_trans[3], 0, er_trans[4]))
 
+# rate matrices
 Q := fnGTR(er, pi)
 
+# set alpha, the shape for the gamma variation among sites
+alpha ~ dnUniform(0, 1E8)
+
+# moves
+moves.append( mvScale(alpha, weight = 10.0) )
+
+# indicator, like for Q
+alpha_indicator := ifelse(alpha == 1E8, 0, 1)
+
+# set up site rates with the discretized gamma
+site_rates := fnDiscretizeGamma(alpha, alpha, 4)
+
 # finally define the CTMC model
-seq ~ dnPhyloCTMC(tree = phy, Q = Q, type = "DNA")
+seq ~ dnPhyloCTMC(tree = phy, Q = Q, siteRates = site_rates, type = "DNA")
 seq.clamp(nuclear)
 
 # make the model object
@@ -68,12 +81,44 @@ mymodel = model(phy)
 ###
 # set up monitors and run
 
+# output directory
+output_dir = "output/output_nuclear/"
+
 # monitors
-monitors.append( mnModel(filename = "output_nuclear/nuclear.log", printgen = 10, separator = TAB) )
-monitors.append( mnFile(filename = "output_nuclear/nuclear.trees", printgen = 10, phy) )
+monitors.append( mnModel(filename = output_dir + "nuclear.log", printgen = 10, separator = TAB) )
+monitors.append( mnFile(filename = output_dir + "nuclear.trees", printgen = 10, phy) )
 monitors.append( mnScreen(printgen = 1000) )
 # to the screen we will just worry about the indicators
 
 # run MCMC
 mymcmc = mcmc(mymodel, moves, monitors, nruns = 2, combine = "mixed")
-mymcmc.run(generations = 50000, tuningInterval = 200, checkpointInterval = 100, checkpointFile = "output_nuclear/nuclear.state")
+mymcmc.run(generations = 50000, tuningInterval = 200, checkpointInterval = 100, checkpointFile = output_dir + "nuclear.state")
+
+###
+# get some analysis in
+
+# this segfaults if you put the outgroup
+# read tree trace
+trace = readTreeTrace(output_dir + "nuclear.trees", treetype = "non-clock")
+
+# write MAP, MCC, and consensus tree to file
+map_tree = mapTree(treeTrace, output_dir + "map_tree.tree")
+mcc_tree = mccTree(treeTrace, output_dir + "mcc_tree.tree")
+con_tree = consensusTree(treeTrace, output_dir + "con_tree.tree")
+
+# and write posterior probability of important clades to a file
+canina <- clade("Canis_lupus", "Canis_latrans", "Canis_simensis", 
+                "Canis_aureus", "Cuon_alpinus", "Lycaon_pictus", 
+                "Canis_adustus", "Canis_mesomelas", "Canis_dirus")
+wlc_no_dirus <- clade("Canis_lupus", "Canis_latrans", "Canis_simensis", 
+                      "Canis_aureus", "Cuon_alpinus", "Lycaon_pictus", 
+                      "Canis_adustus", "Canis_mesomelas")
+wlc_no_jackals <- clade("Canis_lupus", "Canis_latrans", "Canis_simensis", 
+                        "Canis_aureus", "Cuon_alpinus", "Lycaon_pictus", "Canis_dirus")
+
+write("Posterior probability of Canina: " + trace.cladeProbability(canina) + "; Canina minus dire wolf: " +
+      trace.cladeProbability(wlc_no_dirus) + "; Canina minus jackals: " + trace.cladeProbability(wlc_no_jackals), 
+      filename = output_dir + "cladeProbs.txt")
+
+# quit
+q()
