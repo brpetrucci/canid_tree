@@ -6,11 +6,11 @@
 
 #SBATCH --time=3-00:00:00
 
-#SBATCH --output=output/output_combined2/job.%J.out
+#SBATCH --output=output/output_combined3/job.%J.out
 
-#SBATCH --error=output/output_combined2/job.%J.err
+#SBATCH --error=output/output_combined3/job.%J.err
 
-#SBATCH --job-name="combined_evidence2"
+#SBATCH --job-name="combined_evidence3"
 
 #SBATCH --mail-user=petrucci@iastate.edu
 #SBATCH --mail-type=BEGIN

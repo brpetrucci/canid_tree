@@ -232,7 +232,7 @@ morpho_seq.clamp(morpho)
 mymodel = model(fbd_tree)
 
 # output dir
-output_dir = "output/output_combined/"
+output_dir = "output/output_combined3/"
 
 # model monitor - all numerical parameters
 monitors.append( mnModel(filename = output_dir + "combined.log", printgen = 10) )

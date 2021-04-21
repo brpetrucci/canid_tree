@@ -1,0 +1,27 @@
+#NEXUS
+
+	Begin taxa;
+	Dimensions ntax=16;
+	Taxlabels
+		Canis_adustus
+		Canis_aureus
+		Canis_dirus_GB
+		Canis_dirus_SP
+		Canis_latrans
+		Canis_lupaster
+		Canis_lupus_EU
+		Canis_lupus_PA
+		Canis_lupus_YE
+		Canis_mesomelas
+		Canis_simensis
+		Cuon_alpinus
+		Lycalopex_culpaeus
+		Lycaon_pictus_25
+		Lycaon_pictus_41
+		Urocyon_cinereoargenteus
+		;
+End;
+
+Begin trees;
+tree TREE1 = [&R](((((((((((Canis_lupus_EU[&index=15,age_95%_HPD={0.555548,0.581112}]:0.017445,Canis_lupus_PA[&index=12,age_95%_HPD={0.564431,0.590096}]:0.008544)[&index=17,posterior=1.000000,age_95%_HPD={0.573019,0.598606}]:0.005224,Canis_lupus_YE[&index=2,age_95%_HPD={0.562687,0.588431}]:0.015446)[&index=18,posterior=1.000000,age_95%_HPD={0.578235,0.603905}]:0.006903,Canis_latrans[&index=5,age_95%_HPD={0.564547,0.589746}]:0.020860)[&index=19,posterior=1.000000,age_95%_HPD={0.585471,0.61074}]:-0.003367,(Canis_lupaster[&index=13,age_95%_HPD={0.554594,0.582618}]:0.016907,Canis_simensis[&index=14,age_95%_HPD={0.532775,0.582284}]:0.028100)[&index=20,posterior=0.500000,age_95%_HPD={0.582789,0.588582}]:0.009018)[&index=21,posterior=0.500000,age_95%_HPD={0.591582,0.597367}]:0.020843,Canis_aureus[&index=11,age_95%_HPD={0.587103,0.612955}]:0.015503)[&index=22,posterior=1.000000,age_95%_HPD={0.598355,0.632469}]:0.021539,Cuon_alpinus[&index=3,age_95%_HPD={0.522641,0.553223}]:0.099115)[&index=23,posterior=1.000000,age_95%_HPD={0.622264,0.651784}]:-0.003533,(Canis_dirus_GB[&index=9,age_95%_HPD={0.616208,0.640833}]:0.001878,Canis_dirus_SP[&index=6,age_95%_HPD={0.615925,0.640607}]:0.002183)[&index=24,posterior=1.000000,age_95%_HPD={0.618069,0.642733}]:0.003093)[&index=25,posterior=0.500000,age_95%_HPD={0.630683,0.636338}]:0.005511,(Lycaon_pictus_25[&index=7,age_95%_HPD={0.520411,0.553009}]:0.003838,Lycaon_pictus_41[&index=8,age_95%_HPD={0.522415,0.555013}]:0.001840)[&index=26,posterior=1.000000,age_95%_HPD={0.524159,0.556757}]:0.098444)[&index=27,posterior=0.500000,age_95%_HPD={0.636214,0.641863}]:0.006837,Urocyon_cinereoargenteus[&index=4]:0.645810)[&index=28,posterior=0.274060,age_95%_HPD={0.642854,0.648506}]:0.009094,Lycalopex_culpaeus[&index=16,age_95%_HPD={0.481117,0.487381}]:0.170793)[&index=29,posterior=1.000000,age_95%_HPD={0.643324,0.666342}]:0.028393,Canis_adustus[&index=1,age_95%_HPD={0.666348,0.691221}]:0.004607,Canis_mesomelas[&index=10,age_95%_HPD={0.581764,0.607303}]:0.088727)[&index=30,posterior=1.000000,age_95%_HPD={0.670691,0.695794}]:0.000000;
+End;
