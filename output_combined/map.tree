@@ -1,0 +1,34 @@
+#NEXUS
+
+	Begin taxa;
+	Dimensions ntax=23;
+	Taxlabels
+		Canis_adustus
+		Canis_armbrusteri
+		Canis_arnensis
+		Canis_aureus
+		Canis_chihliensis
+		Canis_dirus
+		Canis_edwardii
+		Canis_etruscus
+		Canis_falconeri
+		Canis_ferox
+		Canis_latrans
+		Canis_lepophagus
+		Canis_lupus
+		Canis_mesomelas
+		Canis_mosbachensis
+		Canis_simensis
+		Canis_thooides
+		Canis_variabilis
+		Cuon_alpinus
+		Lycaon_pictus
+		Urocyon_cinereoargenteus
+		Urocyon_minicephalus
+		Urocyon_webbi
+		;
+End;
+
+Begin trees;
+tree TREE1 = [&R](((((((((((Canis_edwardii[&index=10,sampled_ancestor=0.500000,age_95%_HPD={0.30007,1.23086}]:0.240441,Canis_lupus[&index=18]:0.862275)[&index=24,posterior=0.073063,age_95%_HPD={0.402021,1.28829}]:0.408348)Canis_mosbachensis[&index=25,posterior=0.073219,age_95%_HPD={0.623744,2.92838},sampled_ancestor=0.888805]:2.474942,Canis_latrans[&index=13]:3.745565)[&index=26,posterior=0.249878,age_95%_HPD={0.92125,6.1043}]:-0.064452,(Canis_aureus[&index=9]:0.617817)Canis_variabilis[&index=27,posterior=0.355518,age_95%_HPD={0.012215,1.81428},sampled_ancestor=0.985178]:3.063296)[&index=28,posterior=0.893005,age_95%_HPD={0.515685,7.06111}]:0.708258,(Canis_simensis[&index=2]:2.404457)Canis_arnensis[&index=29,posterior=0.461180,age_95%_HPD={0.508934,4.49052},sampled_ancestor=0.655704]:1.984914)[&index=30,posterior=0.325274,age_95%_HPD={1.50593,9.2474}]:1.998722,(((Cuon_alpinus[&index=3]:1.919867)Canis_falconeri[&index=31,posterior=0.508600,age_95%_HPD={0.685108,3.44297},sampled_ancestor=0.558397]:2.472760,Canis_chihliensis[&index=16,sampled_ancestor=0.492223,age_95%_HPD={0.781973,2.49769}]:2.730744)[&index=32,posterior=0.164659,age_95%_HPD={2.43697,9.98641}]:-0.325458,Canis_etruscus[&index=15,sampled_ancestor=0.433559,age_95%_HPD={0.011848,4.96473}]:2.138984)[&index=33,posterior=0.207991,age_95%_HPD={1.95442,10.0988}]:2.320924)[&index=34,posterior=0.370028,age_95%_HPD={3.60202,12.3937}]:-0.766431,((Canis_adustus[&index=12]:1.984925,Canis_mesomelas[&index=5]:1.984925)[&index=35,posterior=0.987712,age_95%_HPD={0.380331,4.08446}]:0.959910,Lycaon_pictus[&index=8]:2.944835)[&index=36,posterior=0.640260,age_95%_HPD={1.02771,8.68681}]:2.676826)[&index=37,posterior=0.359584,age_95%_HPD={4.51884,13.244}]:-0.615643,Canis_thooides[&index=19,sampled_ancestor=0.348051,age_95%_HPD={1.80128,4.64051}]:1.923559)[&index=38,posterior=0.015266,age_95%_HPD={4.71418,5.49538}]:-0.052950)Canis_lepophagus[&index=39,posterior=0.045420,age_95%_HPD={4.70758,5.34141},sampled_ancestor=0.942514]:6.718418,((Canis_dirus[&index=14]:1.946784)Canis_armbrusteri[&index=40,posterior=0.944869,age_95%_HPD={0.156968,4.0392},sampled_ancestor=0.946402]:3.049619)Canis_ferox[&index=41,posterior=0.080263,age_95%_HPD={3.98148,7.84008},sampled_ancestor=0.834941]:6.675084)[&index=42,posterior=0.741278,age_95%_HPD={4.84001,15.8938}]:6.413981,((Urocyon_cinereoargenteus[&index=22]:0.876634)Urocyon_minicephalus[&index=43,posterior=0.942380,age_95%_HPD={0.301739,1.6283},sampled_ancestor=0.942380]:6.568215)Urocyon_webbi[&index=44,posterior=0.907004,age_95%_HPD={5.09976,9.10143},sampled_ancestor=0.963113]:10.640619)[&index=45,posterior=1.000000,age_95%_HPD={5.78146,28.6831}]:0.000000;
+End;
